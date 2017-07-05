@@ -1,0 +1,66 @@
+year,age,male,incidence,location
+2005,1,1,0,barnighausen MI adjusted
+2005,2,1,0,barnighausen MI adjusted
+2005,3,1,0,barnighausen MI adjusted
+2005,4,1,0.022,barnighausen MI adjusted
+2005,5,1,0.038,barnighausen MI adjusted
+2005,6,1,0.091,barnighausen MI adjusted
+2005,7,1,0.107,barnighausen MI adjusted
+2005,8,1,0.081,barnighausen MI adjusted
+2005,9,1,0.076,barnighausen MI adjusted
+2005,10,1,0.063,barnighausen MI adjusted
+2005,11,1,0.069,barnighausen MI adjusted
+2005,12,1,0,barnighausen MI adjusted
+2005,1,0,0,barnighausen MI adjusted
+2005,2,0,0,barnighausen MI adjusted
+2005,3,0,0,barnighausen MI adjusted
+2005,4,0,0.047,barnighausen MI adjusted
+2005,5,0,0.088,barnighausen MI adjusted
+2005,6,0,0.125,barnighausen MI adjusted
+2005,7,0,0.104,barnighausen MI adjusted
+2005,8,0,0.092,barnighausen MI adjusted
+2005,9,0,0.075,barnighausen MI adjusted
+2005,10,0,0.067,barnighausen MI adjusted
+2005,11,0,0,barnighausen MI adjusted
+2005,12,0,0,barnighausen MI adjusted
+2005,1,1,0,barnighausen crude
+2005,2,1,0,barnighausen crude
+2005,3,1,0,barnighausen crude
+2005,4,1,0.01,barnighausen crude
+2005,5,1,0.028,barnighausen crude
+2005,6,1,0.087,barnighausen crude
+2005,7,1,0.076,barnighausen crude
+2005,8,1,0.019,barnighausen crude
+2005,9,1,0.036,barnighausen crude
+2005,10,1,0.008,barnighausen crude
+2005,11,1,0.021,barnighausen crude
+2005,12,1,0,barnighausen crude
+2005,1,0,0,barnighausen crude
+2005,2,0,0,barnighausen crude
+2005,3,0,0,barnighausen crude
+2005,4,0,0.039,barnighausen crude
+2005,5,0,0.056,barnighausen crude
+2005,6,0,0.08,barnighausen crude
+2005,7,0,0.033,barnighausen crude
+2005,8,0,0.032,barnighausen crude
+2005,9,0,0.02,barnighausen crude
+2005,10,0,0.018,barnighausen crude
+2005,11,0,0,barnighausen crude
+2005,12,0,0,barnighausen crude
+2006,4,0,0.042,karim ije 2011
+2006,5,0,0.08,karim ije 2011
+2006,6,0,0.087,karim ije 2011
+2008,4,0,0.0491,vandormael 2014
+2008,5,0,0.078,vandormael 2014
+2008,6,0,0.065,vandormael 2014
+2008,7,0,0.0423,vandormael 2014
+2008,8,0,0.025,vandormael 2014
+2008,9,0,0.0219,vandormael 2014
+2008,10,0,0.0136,vandormael 2014
+2008,4,1,0.009,vandormael 2014
+2008,5,1,0.0328,vandormael 2014
+2008,6,1,0.0466,vandormael 2014
+2008,7,1,0.0325,vandormael 2014
+2008,8,1,0.0298,vandormael 2014
+2008,9,1,0.0223,vandormael 2014
+2008,10,1,0.017,vandormael 2014
