@@ -31,6 +31,7 @@ interventions[, c("year", "year_exact") := list(floor(year_start + (time - 1) * 
 interventions$male <- factor(interventions$male, levels = c(0, 1), labels = c("Female", "Male"))
 interventions$age <- factor(interventions$age, levels = seq(1, 12), labels = c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50-54", "55-59"))
 interventions$hiv <- factor(interventions$hiv, levels = c(0, 1), labels = c("Negative", "Positive"))
+interventions$cd4 <- factor(interventions$cd4, levels = seq(0, 5), labels = c("Uninfected", "Acute", "> 500", "350-500", "200-349", "< 200"))
 
 stopifnot(dis_dist[cd4 == 0 | vl == 0, sum(total)] == 0) ## No HIV-infected individual should have VL or CD4 = 0 - that's reserved for uninfected (hiv == 0) individuals
 dis_dist <- dis_dist[cd4 != 0 & vl != 0]
@@ -64,6 +65,9 @@ pop_data$age <- factor(pop_data$age, levels = seq(1, 12), labels = c("0-4", "5-9
 ## Total population
 total_pop <- population[, list(total = sum(pop_size)), by= list(male, year_exact, year)]
 total_pop_data <- pop_data[, list(total = sum(pop)), by = list(male, year)]
+
+## Total HIV negative population
+total_neg_pop <- population[hiv == "Negative", list(total = sum(pop_size)), by= list(male, year_exact, year)]
 
 total_pop_plot <- ggplot(data = total_pop, aes(x = year_exact, y = total / 1000000)) +
   geom_line(aes(colour = male)) +
@@ -167,8 +171,9 @@ age_prev_plot <- ggplot(data = age_prev, aes(x = year_exact, y = prev)) +
 ## Total
 total_incidence <- incidence[, list(infections = sum(horiz_infections + vert_infections)), by = list(year, year_exact, male)]
 setkey(total_incidence, male, year_exact, year)
-setkey(total_pop, male, year_exact, year)
-total_incidence[total_pop, denom := total]
+setkey(total_neg_pop, male, year_exact, year)
+total_incidence[total_neg_pop, denom := total]
+# total_incidence <- total_incidence[, list(incidence_rate = sum(infections)/sum(denom * tstep)), by = list(year, male)]
 total_incidence <- total_incidence[, list(incidence_rate = sum(infections)/sum(denom * tstep)), by = list(year, male)]
 
 incidence_rate_plot <- ggplot(data = total_incidence, aes(x = year, y = incidence_rate * 100)) +
@@ -197,7 +202,7 @@ incidence_rate_age_plot <- ggplot(data = age_incidence, aes(x = year, y = incide
   ggtitle("Age-specific HIV incidence")
 
 ## Intervention coverage
-## ART
+## ART by age
 art_age <- interventions[hiv == "Positive", list(size = sum(total)), by = list(age, male, year_exact, art)]
 art_age <- art_age[art == 1]
 hiv_age_pop <- population[hiv == "Positive", list(denom = sum(pop_size)), by = list(age, male, year_exact)]
@@ -214,6 +219,23 @@ art_age_plot <- ggplot(data = art_age, aes(x = year_exact, y = cov)) +
   xlab("Year") + ylab("ART Coverage (%)") +
   facet_wrap(~age) +
   ggtitle("Age-specific ART coverage")
+
+## ART by CD4
+art_cd4 <- interventions[hiv == "Positive", list(size = sum(total)), by = list(cd4, year_exact, art)]
+art_cd4 <- art_cd4[art == 1]
+hiv_cd4_pop <- population[hiv == "Positive", list(denom = sum(pop_size)), by = list(cd4, year_exact)]
+setkey(art_cd4, cd4, year_exact)
+setkey(hiv_cd4_pop, cd4, year_exact)
+art_cd4[hiv_cd4_pop, cov := 100 * size / denom]
+art_cd4[is.na(cov), cov := 0]
+
+art_cd4_plot <- ggplot(data = art_cd4, aes(x = year_exact, y = cov)) +
+  geom_line() +
+  scale_x_continuous(limits = c(year_start, year_end), breaks = seq(year_start, year_end, by = 10)) +
+  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, by = 20)) +
+  xlab("Year") + ylab("ART Coverage (%)") +
+  facet_wrap(~cd4) +
+  ggtitle("CD4-specific ART coverage")
 
 ## Condoms
 condom_age <- interventions[, list(size = sum(total)), by = list(age, male, year_exact, condom)]
@@ -281,6 +303,7 @@ print(age_prev_plot)
 print(incidence_rate_plot)
 print(incidence_rate_age_plot)
 print(art_age_plot)
+print(art_cd4_plot)
 print(circ_age_plot)
 print(condom_age_plot)
 print(cd4_plot)

@@ -13,6 +13,12 @@
 ## Note that "dt" stands for "data.table" and "time_index" is the iteration of the loop (corresponding to the global variable tt), which represents the discrete time point. Functions that have "time_index" as an argument are time-dependent.
 
 calcMixMat <- function(dt, mix_mat, time_index = tt) {
+
+  ## Troubleshooting
+  # mix_mat <- mixing_matrix
+  # dt <- pop
+  # time_index <- tt
+  
   
   ## Reset mixing matrix to zero
   mix_mat[, prop := 0]
@@ -46,6 +52,8 @@ calcMixMat <- function(dt, mix_mat, time_index = tt) {
 
   ## Then, calculate distribution by risk given age (ie, the conditional probability of having a partnership from risk category r given the partner's age is a). Pr(a,r) = Pr(r|a) * Pr(a). Note that this really shouldn't change the way the model is currently structured, since the risk distribution is set automatically.  But this allows it to change should we choose to relax that assumption later.
   dt[, sex_age_total := sum(partners * count), by = list(male, age)]
+  # random_mix_risk_age <- dt[, list(prop_risk_by_age = sum(partners * count/sex_age_total), num = sum(partners * count)), by = list(male, risk, age)]
+  
   random_mix_risk_age <- dt[, list(prop_risk_by_age = sum(partners * count/sex_age_total)), by = list(male, risk, age)]
   setnames(random_mix_risk_age, paste(names(random_mix_risk_age), "p", sep = "_"))
   setkey(random_mix_risk_age, male_p, age_p, risk_p)
@@ -74,7 +82,10 @@ calcMixMat <- function(dt, mix_mat, time_index = tt) {
 
 ## Adjust number of partnerships. The number of partnerships is adjusted for differences in reported number of sexual partners between males and females. The global parameter "theta" determines whether the difference is driven by males or females, where theta = 1 indicates entirely male-driven and theta = 0 indicates entirely female-driven.
 adjustPartnerships <- function(dt, mix_mat) {
-  
+
+# dt <- pop
+# mix_mat <- mixing_matrix
+#   
   ## Sum number of partnerships by age, sex, and risk
   sums <- dt[, list(count = sum(count)), by = list(age, male, risk)]
   sums[partners, partners_count := count * partners]
@@ -96,6 +107,10 @@ adjustPartnerships <- function(dt, mix_mat) {
   male_reports[female_reports, c("partners_female", "discrepancy") := list(partners_female, partners_male / partners_female)]
   female_reports[male_reports, c("partners_male", "discrepancy") := list(partners_male, partners_male / partners_female)]
   
+  ## Workaround for situations in which zero percent of the population is in a given risk group
+  male_reports[is.na(discrepancy), discrepancy := 0]
+  female_reports[is.na(discrepancy), discrepancy := 0]
+  
   ## Reformat
   setnames(male_reports, c("age_male", "risk_male", "age_female", "risk_female"), c("age", "risk", "age_p", "risk_p"))
   male_reports[, c("male", "partners_male", "partners_female") := list(1, NULL, NULL)]
@@ -115,6 +130,9 @@ adjustPartnerships <- function(dt, mix_mat) {
   disc[male == 1, adjusted_partners := partners * discrepancy ^ -(1 - theta)]
   disc[male == 0, adjusted_partners := partners * discrepancy ^ theta]
   
+  ## Workaround for 0 partners
+  disc[adjusted_partners == Inf, adjusted_partners := 0]
+  
   ## Note that superassigment operator here - for now (for debugging) we want adjusted_partners in the parent environment.  We can figure out later a way to merge some of the lambda_functions together so we don't need to keep track of disc in the run_model environment.
   adjusted_partners <<- disc[, .(male, age, risk, age_p, risk_p, adjusted_partners)]
   
@@ -125,6 +143,10 @@ adjustPartnerships <- function(dt, mix_mat) {
 ## Calculate lambda (force of infection) for each individual. 
 calcLambda <- function(dt, mix_mat, adj_parts) {
   
+  # dt <- pop
+  # mix_mat <- mixing_matrix
+  # adj_parts <- adjusted_partners
+  # 
   ## Multiply mixing matrix by adjusted partnership matrix to get number of partners per person per year in each possible partnership type
   setkey(mix_mat, male, age, risk, age_p, risk_p)
   setkey(adj_parts, male, age, risk, age_p, risk_p)
@@ -136,8 +158,8 @@ calcLambda <- function(dt, mix_mat, adj_parts) {
   lambda_mat <- rbindlist(lapply(0:1, function(x, d) data.table(d, art_p = x), d = lambda_mat))
   
   ## Merge on transmission probabilities for each partnership
-  setkey(lambda_mat, male, risk, vl_p, art_p)
-  setkey(betas, male, risk, vl_p, art_p)
+  setkey(lambda_mat, male, age, risk, vl_p, art_p)
+  setkey(betas, male, age, risk, vl_p, art_p)
   lambda_mat[betas, transmission_risk := transmission_risk]
   
   ## Calculate number HIV + people in each ART and viral load category by sex, age, and risk
@@ -157,6 +179,12 @@ calcLambda <- function(dt, mix_mat, adj_parts) {
   
   ## Calculate per-partnership per year risk - weighted average of transmission risk based on counts of HIV+ in each viral load category in each partnership divided by total population (HIV+ and HIV-) in each age/sex/risk category
   lambda_mat <- lambda_mat[, list(pp_risk = sum(art_vl_count * transmission_risk / total), adjusted_partners = median(adjusted_partners)), by = list(male, age, risk, male_p, age_p, risk_p)]
+
+  ## This is a workaround to ensure that, when there are no partners in the partnership category, we don't get a NaN.
+  lambda_mat[is.nan(pp_risk), pp_risk := 0]
+
+  ## Test for rates
+  # test <- lambda_mat[, list(lambda_rate = sum(adjusted_partners*pp_risk)), by = list(male, age, risk)]
 
   ## Multiply number of partners per person per year in each possible partnership type by the per-partnership per year transmission risk. Note that this formula differs from Roger's supplemental since we're explicitly using risks here. 
   lambda_mat[, total_risk := 1 - (1 - pp_risk) ^ adjusted_partners]

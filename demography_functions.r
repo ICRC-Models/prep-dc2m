@@ -9,11 +9,16 @@
 ## Note that "dt" stands for "data.table" and "time_index" is the iteration of the loop (corresponding to the global variable tt), which represents the discrete time point. Functions that have "time_index" as an argument are time-dependent.
 
 ## Demography functions
-addBirths <- function(dt, time_index = tt) {
+addBirths <- function(dt, time_index = tt, year) {
   
   ## Parameters (move these outside)
-  nncirc_prop <- 0.1 ## Neonatal circumcision prevalence
-  
+  ## Make the assumption that circumcision doesn't start until 1990
+  if(year < 1990) {
+    nncirc_prop <- 0
+  } else {
+    nncirc_prop <- 0.1 ## Neonatal circumcision prevalence
+  }
+
   setkey(fert, age, male, cd4, art)
   setkey(dt, age, male, cd4, art)
   
@@ -21,10 +26,10 @@ addBirths <- function(dt, time_index = tt) {
   dt[fert, births := count * gamma]
   
   ## Keep track of birth statistics
-  birth_stats <- dt[male == 0, list(time = tt, num = sum(births)), by = list(hiv, age)]
-  setkey(birth_stats, time, hiv, age)
-  setkey(births, time, hiv, age)
-  births[birth_stats, num_births := num]
+  # birth_stats <- dt[male == 0, list(time = tt, num = sum(births)), by = list(hiv, age)]
+  # setkey(birth_stats, time, hiv, age)
+  # setkey(births, time, hiv, age)
+  # births[birth_stats, num_births := num]
   
   ## Calculate births from uninfected mothers. Count mothers on ART as "negatives"
   births_from_neg <- dt[hiv == 0 | art == 1, sum(births, na.rm = TRUE)]
@@ -58,10 +63,10 @@ addBirths <- function(dt, time_index = tt) {
   dt[, diff := diff + births]
   
   ## Keep track of new infections
-  hiv_births <- dt[hiv == 1 & age == 1, list(inf_births = sum(births), time = tt), by = list(age, male)]
+  hiv_births <- dt[hiv == 1 & age == 1, list(inf_births = sum(births), time = tt), by = list(age, male, risk)]
   
-  setkey(hiv_births, time, age, male)
-  setkey(incidence, time, age, male)
+  setkey(hiv_births, time, age, male, risk)
+  setkey(incidence, time, age, male, risk)
   
   incidence[hiv_births, vert_infections := inf_births]
   
@@ -85,9 +90,9 @@ subtractDeaths <- function(dt) {
   dt[, diff := diff - back_deaths - hiv_deaths]
   
   ## Keep track
-  death_stats <- dt[, list(aids_deaths = sum(hiv_deaths), non_aids_deaths = sum(back_deaths), time = tt), by = list(hiv, age, male)]
-  setkey(death_stats, time, hiv, age, male)
-  setkey(deaths, time, hiv, age, male)
+  death_stats <- dt[, list(aids_deaths = sum(hiv_deaths), non_aids_deaths = sum(back_deaths), time = tt), by = list(hiv, age, male, risk)]
+  setkey(death_stats, time, hiv, age, male, risk)
+  setkey(deaths, time, hiv, age, male, risk)
   deaths[death_stats, c("hiv_deaths", "back_deaths") := list(aids_deaths, non_aids_deaths)]
   
   ## Clean up

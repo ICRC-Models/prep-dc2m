@@ -8,6 +8,9 @@
 
 progressDisease <- function(dt, time_step) {
   
+  # dt <- pop
+  # time_step <- tstep
+
   ## Note that we want the probability of progressing in a given time step.  This can be obtained from the mean duration using the exponential decay function (assuming a constant rate).  http://hyperphysics.phy-astr.gsu.edu/hbase/nuclear/meanlif.html
   
   setkey(dis_prog, hiv, male, vl, cd4, art)

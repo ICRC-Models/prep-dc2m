@@ -9,7 +9,7 @@
 require(data.table)
 
 init_pop <- fread("data/initial_populations.csv")
-init_pop[, pop := floor(pop * 0.8)] ## Remnant from Roger's model - I think this is saying that the population in 1980 should be about 80% of that in 1985
+init_pop[, pop := floor(pop / 1.13)] ## Remnant from Roger's model - I think this is saying that the population in 1980 should be about 80% of that in 1985
 init_pop[, c("hiv", "cd4", "vl", "circ", "prep", "condom", "art") := 0]
 setkey(init_pop, hiv, age, male, cd4, vl, circ, prep, condom, art)
 
@@ -25,6 +25,8 @@ rm(art_coverage)
 
 ## Condom usage
 condom_coverage <- fread("data/condom_usage.csv")
+condom_coverage[, usage := 0.165] # Uses Nick's constant condom coverage for both males and females
+# condom_coverage[, usage := 0] # Option to turn condom coverage off
 # condom_coverage[, usage := usage * 0.73] ## Optional bias correction
 condom_coverage <- condom_coverage[order(condom_coverage$year), ]
 condom_cov <- lapply(sort(unique(condom_coverage$age)), function(age_cat) {
@@ -35,18 +37,19 @@ condom_cov <- lapply(sort(unique(condom_coverage$age)), function(age_cat) {
 rm(condom_coverage)
 
 ## Proportion of population in each risk group (by age)
-risk_props <- fread("data/risk_proportions.csv")
+risk_props <- fread("data/risk_proportions_nick.csv")
 setkey(risk_props, age, male, risk)
 
 ## Fertility
-fert <- fread("data/base_fertility_rate_moultrie_1990.csv")
+fert <- fread("data/base_fertility_rate.csv")
 
 ## Add effect modification by CD4 count
 fert <- rbindlist(lapply(0:5, function(x, d) data.table(d, cd4 = x), d = fert))
 fert <- rbindlist(lapply(0:1, function(x, d) data.table(d, art = x), d = fert))
 
 ## Add these fertility coefficients
-fert_coeffs <- data.table(cd4 = seq(0, 5), coeff = c(1, 1, 0.59, 0.59, 0.42, 0.42))
+# fert_coeffs <- data.table(cd4 = seq(0, 5), coeff = c(1, 1, 0.59, 0.59, 0.42, 0.42))
+fert_coeffs <- data.table(cd4 = seq(0, 5), coeff = c(1, 1, 1, 0.450285714, 00.270285714, 0.1897142869)) ## Nick's fertility coefficients
 fert_coeffs <- rbindlist(lapply(0:1, function(x, d) data.table(d, art = x), d = fert_coeffs))
 fert_coeffs[art == 1, coeff := 1] ## No reduction in fertility for mothers on ART
 setkey(fert_coeffs, cd4, art)
@@ -62,7 +65,7 @@ vert_trans <- fread("data/vertical_transmission.csv")
 vert_trans <- interpolate(breaks = vert_trans$year, values = vert_trans$vert)
 
 ## Background mortality (non-HIV) by age and sex. These are per-year mortality rates.
-back_mort <- fread("data/background_mortality.csv")
+back_mort <- fread("data/background_mortality_nick.csv") ## Using Nick's paramters
 back_mort[, mu := 1 - exp(-mu * tstep)] # Adjust for time step and convert to risk
 setkey(back_mort, age, male)
 
@@ -74,7 +77,7 @@ hiv_mort[, c("hiv", "alpha") := list(1, 1 - exp(-alpha * tstep))]
 setkey(hiv_mort, hiv, age, cd4, art)
 
 ## Disease progression - cd4_duration and vl_duration are average duration spent in that CD4 or VL category (respectively) in years
-dis_prog <- fread("data/disease_progression.csv")
+dis_prog <- fread("data/disease_progression_nick.csv")
 dis_prog$hiv <- 1
 dis_prog$art <- 0
 
@@ -110,18 +113,21 @@ partners[, partners := partners * tstep]
 theta <- 0.5
 
 ## Number of coital acts per partnership 
-acts <- fread("data/acts_per_partnership.csv")
+## acts <- fread("data/acts_per_partnership.csv")
+acts <- fread("data/acts_per_partnership_age.csv") ## This is now by risk and age
 ## For testing purposes - reduce number of acts by some factor to make prevalence data seem more reasonable
 # acts[, acts := acts/5]
 
 ## Per-act probability of HIV transmission by viral load of partner. Note that ART risk reduction is built in here. We might want to consider moving it 
-baseline <- 0.0006 ## Baseline probability of HIV transmission (VL < 1000 copies/mL)
+## baseline <- 0.0006 ## Baseline probability of HIV transmission (VL < 1000 copies/mL)
+baseline <- 0.0009 ## Nick's new parameter
 trans_probs <- fread("data/transmission_probabilities.csv")
 trans_probs[, chi := baseline * scalar]
 
 ## Calculate per-partnership probability of HIV transmission per year.  Depends on risk group of HIV-negative partner and viral load of HIV positive partner.
-betas <- data.table(expand.grid(male, risk, vl, art))
-setattr(betas, 'names', c("male", "risk", "vl", "art"))
+## Updating this to include age, as acts per partnership depends now on age.
+betas <- data.table(expand.grid(male, risk, age, vl, art))
+setattr(betas, 'names', c("male", "risk", "age", "vl", "art"))
 
 ## Join transmission probabilities per act
 setkey(betas, vl)
@@ -129,8 +135,8 @@ setkey(trans_probs, vl)
 betas[trans_probs, chi := chi]
 
 ## Join sexual acts per year per partnership
-setkey(acts, male, risk)
-setkey(betas, male, risk)
+setkey(acts, male, age, risk)
+setkey(betas, male, age, risk)
 betas[acts, acts := acts]
 
 ## Note that the vl and art variables actually correspond to the partner
@@ -140,7 +146,7 @@ setnames(betas, c("vl", "art"), c("vl_p", "art_p"))
 betas[, transmission_risk := 1 - (1 - chi) ^ acts]
 
 ## Risk reduction for ART usage in HIV positive partner
-betas[art_p == 1, transmission_risk := transmission_risk * 0.08]
+betas[art_p == 1, transmission_risk := transmission_risk * 0.04]
 
 
 ## Risk reduction for HIV-negative partner based on intervention usage
