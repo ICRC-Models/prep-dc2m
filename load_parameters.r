@@ -17,10 +17,17 @@ setkey(init_pop, hiv, age, male, cd4, vl, circ, prep, condom, art)
 art_coverage <- fread("data/art_coverage.csv")
 
 art_cov <- lapply(sort(unique(art_coverage$cd4)), function(cd4_ind) {
-  
+
   df <- art_coverage[cd4 == cd4_ind]
   interpolate(breaks = df$year, values = df$prop_art)
 })
+
+#art_cov is
+# 5 rows of length nSteps
+# each row corresponds to cd4 1:5
+
+fwrite(art_cov, file="art_cov.csv")
+
 rm(art_coverage)
 
 ## Condom usage
@@ -28,7 +35,7 @@ condom_coverage <- fread("data/condom_usage.csv")
 # condom_coverage[, usage := usage * 0.73] ## Optional bias correction
 condom_coverage <- condom_coverage[order(condom_coverage$year), ]
 condom_cov <- lapply(sort(unique(condom_coverage$age)), function(age_cat) {
-  
+
   df <- condom_coverage[age == age_cat]
   interpolate(breaks = df$year, values = df$usage)
 })
@@ -109,12 +116,12 @@ partners[, partners := partners * tstep]
 ## Theta - parameter that governs the extent to which differences in reported number of sexual partners between males and females is male (1) or female (0) driven
 theta <- 0.5
 
-## Number of coital acts per partnership 
+## Number of coital acts per partnership
 acts <- fread("data/acts_per_partnership.csv")
 ## For testing purposes - reduce number of acts by some factor to make prevalence data seem more reasonable
 # acts[, acts := acts/5]
 
-## Per-act probability of HIV transmission by viral load of partner. Note that ART risk reduction is built in here. We might want to consider moving it 
+## Per-act probability of HIV transmission by viral load of partner. Note that ART risk reduction is built in here. We might want to consider moving it
 baseline <- 0.0006 ## Baseline probability of HIV transmission (VL < 1000 copies/mL)
 trans_probs <- fread("data/transmission_probabilities.csv")
 trans_probs[, chi := baseline * scalar]
