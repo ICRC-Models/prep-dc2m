@@ -87,24 +87,25 @@ incidence[, c("horiz_infections", "vert_infections") := 0]
 # interventions[, total := 0]
 # setkey(interventions, time, hiv, age, male, cd4, art, condom, circ)
 
+## For testing purposes - make this the default order.
+setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
+
+## Add intial populations.  Initially all are susceptible.
+setkey(pop, hiv, age, male, cd4, vl, circ, prep, condom, art)
+pop[init_pop, count := pop]
+
+## Distribute by risk group
+setkey(pop, age, male, risk)
+pop[risk_props, count := count * prop]
+
+## Seed infections - this is currently adding 0.1% of total population to infected groups, but not subtracting them from the susceptible pool.  Need to confirm with Roger
+seedInfections(pop, 0.001)
+
 ## Run model
 for(tt in 1:nsteps) {
 
  ## tt <- 1
   print(tt)
-
-  if(tt == 1) {
-    ## Add intial populations.  Initially all are susceptible.
-    setkey(pop, hiv, age, male, cd4, vl, circ, prep, condom, art)
-    pop[init_pop, count := pop]
-
-    ## Distribute by risk group
-    setkey(pop, age, male, risk)
-    pop[risk_props, count := count * prop]
-
-    ## Seed infections - this is currently adding 0.1% of total population to infected groups, but not subtracting them from the susceptible pool.  Need to confirm with Roger
-    ## seedInfections(pop, 0.001)
-  }
 
   pop[, time := tt]
   ## Calculate calendar year

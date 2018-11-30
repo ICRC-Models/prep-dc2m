@@ -121,6 +121,7 @@ agePop <- function(dt, time_step) {
   prev_age <- copy(dt)[, age := age + 1] ## This is making a copy but still might be faster than using dcast to get the populations of the previous age group
   setnames(prev_age, "count", "count_prev")
   setkeyv(dt, all_keys)
+  setkeyv(prev_age, all_keys)
   dt[prev_age, diff := diff + time_step/5 * count_prev]
   
 }

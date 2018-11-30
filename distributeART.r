@@ -24,6 +24,8 @@ distributeART <- function(dt, time_index) {
   setkey(dt, hiv, cd4, art)
   dt[props, count := sum * prop]
   
+  setorder(dt, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
+  
   dt[, sum := NULL]
   
 }

@@ -3,6 +3,7 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{geometry}
+\usepackage{amsmath}
 
  \geometry{
  a4paper,
@@ -69,15 +70,36 @@ State variables are indicated as $X_{d,k,p}^{a,s,r}$, where:
 
 \section{Model equations}
 
-\section{Behavioral risk}
+\section{Disease progression}
+Newly-infected individuals enter a transient acute infection phase characterized by asymptomatic high viremia. They then progress through four CD4 stages ($\geq$ 500, 350-499, 200-349, and $\leq$ 200). Viral load is assumed to be high during acute infection and then constant across CD4 counts.
 
 \section{Demography}
+	\subsection{Aging}
+	As each compartment is indexed to a five-year age group, one-fifth of each compartment progresses to the next age group each year. Individuals entering the older age group are redistributed to match the assumed sexual risk profile of the new age group. Population influx occurs through births into the 0-4 age group, while individuals who age out of the 55-59 age group exit the population. Therefore, each state has an ODE corresponding to aging that occurs at each time step.
+
+	\[
+			dX_{d,k,p}^{a,s,r}(t) =
+		\begin{cases}
+			-\frac{t}{5}X_{d,k,p}^{a,s,r}(t), & \text{if } a=0\\
+			-\frac{t}{5}X_{d,k,p}^{a,s,r}(t) + \frac{t}{5}\sum\limits_{r=1}^3 X_{d,k,p}^{a,s,r}, & \text{if } a\neq0
+		\end{cases}
+	\]
+
+	\subsection{Mortality}
+	Individuals can exit the population through HIV-specific or non-HIV mortality. HIV-specific mortality rates are dependent on both age and CD4 count. Individuals in the youngest (0-4) and oldest (55-59) age groups experience higher HIV-specific mortality rates as shown below:	
+
+
+	\subsection{Fertility}
+
+
+
 
 \section{Interventions}
 
+\section{Behavioral risk}
+
 \section{Transmission}
 
-\section{Disease progression}
 
 \section{Initial conditions}
 
