@@ -11,13 +11,23 @@ def loadCSVs(file1, file2):
 class TestCSVs(unittest.TestCase):
 
     def test_distributeART(self):
+        lines1, lines2 = loadCSVs("distributeART.out", "distributeART.cout")
+        row = 0;
+        for row1, row2 in zip(lines1, lines2):
+            row += 1;
+            # print(row)
+            for val1, val2 in zip(row1.split(","), row2.split(",")):
+                self.assertEqual(float(val1), float(val2), "row %i"%row)
+
+    def test_distributeCondoms(self):
         lines1, lines2 = loadCSVs("distributeCondoms.out", "distributeCondoms.cout")
         row = 0;
         for row1, row2 in zip(lines1, lines2):
             row += 1;
-            print(row)
+            # print(row)
             for val1, val2 in zip(row1.split(","), row2.split(",")):
                 self.assertEqual(float(val1), float(val2), "row %i"%row)
+
 
 
 if __name__ == '__main__':

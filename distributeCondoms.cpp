@@ -43,7 +43,7 @@ void distributeCondoms(Eigen::MatrixXd &pop, int time_index){
     const int nAge = 12;
     const int nMale = 2;
     const int nRisk = 3;
-    const int nCD4 = 6; 
+    const int nCD4 = 6;
     const int nVl = 6;
     const int nCirc = 2;
     const int nPrep = 2;
@@ -52,8 +52,8 @@ void distributeCondoms(Eigen::MatrixXd &pop, int time_index){
     const int nPopRows = pop.rows();
 
     double prop[nAge][nCondom];
-    for(int ii=0; ii<nAge; ii++){ 
-  
+    for(int ii=0; ii<nAge; ii++){
+
             prop[ii][0] = 1 - condom_cov_row(ii);
             prop[ii][1] = condom_cov_row(ii);
 
@@ -146,7 +146,7 @@ void distributeCondoms(Eigen::MatrixXd &pop, int time_index){
 int main(){
     clock_t tStart;
     clock_t tEnd;
-    Eigen::MatrixXd pop = readCSV("incrt.out", pop_cols, pop_rows);
+    Eigen::MatrixXd pop = readCSV("distributeART.out", pop_cols, pop_rows);
     tStart = clock();
     distributeCondoms(pop, 409); //0 based
     tEnd = clock();
