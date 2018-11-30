@@ -66,12 +66,18 @@ rm(fert_coeffs)
 ## Adjust fertility by time step and convert to risk
 fert[, gamma := 1 - exp(-gamma * tstep)]
 
+## Write fert to be read by Cpp
+fwrite(fert, col.names=FALSE, file = "fert.csv")
+
 ## Neonatal circumcision prevalence
 nncirc_prop <- 0.1
 
 ## Vertical transmission
 vert_trans <- fread("data/vertical_transmission.csv")
 vert_trans <- interpolate(breaks = vert_trans$year, values = vert_trans$vert)
+
+## Write vert_trans to be read by Cpp
+fwrite(as.data.table(vert_trans), col.names=FALSE, file = "vert_trans.csv")
 
 ## Background mortality (non-HIV) by age and sex. These are per-year mortality rates.
 back_mort <- fread("data/background_mortality.csv")
