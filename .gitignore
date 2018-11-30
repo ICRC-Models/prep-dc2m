@@ -3,3 +3,6 @@
 *.exe
 *.pdf
 *.RData
+*.o
+/bin
+/popTest
