@@ -105,18 +105,16 @@ fwrite(init_pop, col.names=FALSE, file = "init_pop.csv")
 
 nsteps = 1
 
+setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
 print("Before the loop")
 print(pop[41569, ])
-
-setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
 
 ## Run model
 for(tt in 1:nsteps) {
 
   # tt <- 1
+  tt <- 410
   print(tt)
-  tt <- 4100
-
 
   pop[, time := tt] # add time column to pop? why if you're passsing tt?
   ## Calculate calendar year
