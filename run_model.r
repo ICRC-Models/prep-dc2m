@@ -166,34 +166,47 @@ for(tt in 1:nsteps) {
 
   ## Demography
   addBirths(pop)
+  setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="addBirths.out")
+  
   subtractDeaths(pop)
+  setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="subtractDeaths.out")
+  
+  
   agePop(pop, tstep)
+  setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="agePop.out")
 
   ## Disease progression
   progressDisease(pop, tstep)
+  setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="progressDisease.out")
   ## Transmission
   ## Calculate the mixing matrix
   calcMixMat(pop, mixing_matrix, tt)
+  setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="calcMixMat.out")
 
   ## Calculate adjusted partnerships per year
   adjustPartnerships(pop, mixing_matrix)
+  setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="adjustPartnerships.out")
   ## Calculate lambda
   calcLambda(pop, mixing_matrix, adjusted_partners)
+  setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="calcLambda.out")
   ## Transmit infections
   transmit(pop, lambda_mat)
+  setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="transmit.out")
   # Compute end-of-year population and set difference back to zero for next iteration of loop
   pop[, c("count", "diff") := list(count + diff, 0)]
+  setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="endPop.out")
   # Adjust population to match risk prevalence
   riskAdjust(pop)
+  setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="riskAdjust.out")
   # Increment time step
   tt <- tt + 1
@@ -203,6 +216,6 @@ for(tt in 1:nsteps) {
 ## Save results
 save(population, births, deaths, incidence, interventions, dis_dist, tstep, year_start, year_end, date, name, file = paste("output/", date, "/", name, ".RData", sep = ""))
 
-## Plot results
-source("plot_results.r")
+# ## Plot results
+# source("plot_results.r")
 
