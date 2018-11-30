@@ -35,7 +35,13 @@ Eigen::MatrixXd fert_mat = readCSV("fert.csv", fert_cols, fert_rows); // age, ma
 
 const int gammaInd = 2; // Column of fert_mat that contains fertility coefficient (zero indexed)
 
-void addBirths(Eigen::MatrixXd &pop){
+// Vertical transmission parameters - these are time-varying
+int vert_cols = 1;
+int vert_rows = 410;
+Eigen::MatrixXd vert_trans_mat = readCSV("vert_trans.csv", vert_cols, vert_rows);
+
+
+void addBirths(Eigen::MatrixXd &pop, int time_index){
 
 	// Constants for pop frame. Maybe we should move these outside later?
 	const int nHIV = 2;
@@ -49,6 +55,10 @@ void addBirths(Eigen::MatrixXd &pop){
     const int nCondom = 2;
     const int nArt = 2; // art is 0 or 1
     const int nPopRows = pop.rows();
+
+    // Vertical transmission paramter
+    const double vert_trans = vert_trans_mat(time_index);
+    // std::cout << "vert_trans: " << vert_trans << std::endl;
 
     // Set up fert array - ignore male column. Notice this reorders with respect to R output
     double fert[nAge][nCD4][nArt] = {0};
@@ -133,6 +143,14 @@ void addBirths(Eigen::MatrixXd &pop){
     std::cout << "births_from_pos: " << births_from_pos << std::endl;
 
 // Calculate total infants born HIV+
+  double neg_births;
+  double pos_births;
+
+  neg_births = births_from_pos * (1 - vert_trans) + births_from_neg;
+  pos_births = births_from_pos * vert_trans;
+
+  std::cout << "neg_births: " << neg_births << std::endl;
+  std::cout << "pos_births: " << pos_births << std::endl;
 
 // Calculate total infants born HIV-
 
@@ -151,7 +169,7 @@ int main(){
     clock_t tEnd;
     Eigen::MatrixXd pop = readCSV("distributeCondoms.out", pop_cols, pop_rows);
     tStart = clock();
-    addBirths(pop);
+    addBirths(pop, 409);
     tEnd = clock();
     std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
     writeCSV(pop, "addBirths.cout");
