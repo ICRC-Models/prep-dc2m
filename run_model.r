@@ -156,10 +156,10 @@ for(tt in 1:nsteps) {
   setkey(int_stats, time, hiv, age, male, art, condom, circ)
   interventions[int_stats, total := size]
 
-  # Optional reduction in background mortality
-  if(year >= 1990) {
-    back_mort[, mu := mu * (100 - 2 * tstep)/100]
-  }
+  # # Optional reduction in background mortality
+  # if(year >= 1990) {
+  #   back_mort[, mu := mu * (100 - 2 * tstep)/100]
+  # }
 
   ## Optional decrease in fertility
   # fert[, gamma := gamma * (100 - tstep)/ 100]
