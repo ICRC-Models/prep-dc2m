@@ -77,6 +77,10 @@ adjustPartnerships <- function(dt, mix_mat) {
   
   ## Sum number of partnerships by age, sex, and risk
   sums <- dt[, list(count = sum(count)), by = list(age, male, risk)]
+  
+  setkey(sums, age, male, risk)
+  setkey(partners, age, male, risk)
+  
   sums[partners, partners_count := count * partners]
   
   ## Multiply number of partnerships by mixing matrix
