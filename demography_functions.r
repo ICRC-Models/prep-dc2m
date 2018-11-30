@@ -11,9 +11,6 @@
 ## Demography functions
 addBirths <- function(dt, time_index = tt) {
 
-  ## Parameters (move these outside)
-  nncirc_prop <- 0.1 ## Neonatal circumcision prevalence
-
   setkey(fert, age, male, cd4, art)
   setkey(dt, age, male, cd4, art)
 

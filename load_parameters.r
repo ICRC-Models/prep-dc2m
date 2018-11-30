@@ -66,6 +66,9 @@ rm(fert_coeffs)
 ## Adjust fertility by time step and convert to risk
 fert[, gamma := 1 - exp(-gamma * tstep)]
 
+## Neonatal circumcision prevalence
+nncirc_prop <- 0.1
+
 ## Vertical transmission
 vert_trans <- fread("data/vertical_transmission.csv")
 vert_trans <- interpolate(breaks = vert_trans$year, values = vert_trans$vert)
