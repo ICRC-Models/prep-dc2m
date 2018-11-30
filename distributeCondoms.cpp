@@ -27,8 +27,8 @@ void writeCSV(Eigen::MatrixXd matrix, std::string filename);
 int condom_cols = 12; // Condom coverage is specified for each age group
 int condom_rows = 410; // One row for each time step
 
-int pop_cols = 13;
-int pop_rows = 82944;
+// int pop_cols = 13;
+// int pop_rows = 82944;
 
 Eigen::MatrixXd condom_cov = readCSV("condom_cov.csv", condom_cols, condom_rows);
 
@@ -143,13 +143,13 @@ void distributeCondoms(Eigen::MatrixXd &pop, int time_index){
 
 }
 
-int main(){
-    clock_t tStart;
-    clock_t tEnd;
-    Eigen::MatrixXd pop = readCSV("distributeART.out", pop_cols, pop_rows);
-    tStart = clock();
-    distributeCondoms(pop, 409); //0 based
-    tEnd = clock();
-    std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
-    writeCSV(pop, "distributeCondoms.cout");
-}
+// int main(){
+//     clock_t tStart;
+//     clock_t tEnd;
+//     Eigen::MatrixXd pop = readCSV("distributeART.out", pop_cols, pop_rows);
+//     tStart = clock();
+//     distributeCondoms(pop, 409); //0 based
+//     tEnd = clock();
+//     std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+//     writeCSV(pop, "distributeCondoms.cout");
+// }

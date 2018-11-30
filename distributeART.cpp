@@ -27,8 +27,8 @@ void writeCSV(Eigen::MatrixXd matrix, std::string filename);
 int art_cols = 5;
 int art_rows = 410;
 
-int pop_cols = 13;
-int pop_rows = 82944;
+// int pop_cols = 13;
+// int pop_rows = 82944;
 
 Eigen::MatrixXd art_cov = readCSV("art_cov.csv", art_cols, art_rows);
 
@@ -153,12 +153,12 @@ void distributeART(Eigen::MatrixXd &pop, int time_index){
         daProp = prop[icd4][iart];
 
         if(rowInd-1 == 55985 | rowInd-1 == 55986) {
-        	
+
         	std::cout <<  "icd4: " << icd4 << std::endl;
         	std::cout <<  "iart: " << iart << std::endl;
         	std::cout << "daProp: " << daProp << std::endl;
         }
-        
+
 
         pop(rowInd,countInd) = daSum * daProp;
     }
@@ -167,15 +167,15 @@ void distributeART(Eigen::MatrixXd &pop, int time_index){
 
 }
 
-int main(){
-    clock_t tStart;
-    clock_t tEnd;
-    Eigen::MatrixXd pop = readCSV("incrt.out", pop_cols, pop_rows);
-    tStart = clock();
+// int main(){
+//     clock_t tStart;
+//     clock_t tEnd;
+//     Eigen::MatrixXd pop = readCSV("incrt.out", pop_cols, pop_rows);
+//     tStart = clock();
 
-    distributeART(pop, 409); //0 based
+//     distributeART(pop, 409); //0 based
 
-    tEnd = clock();
-    std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
-    writeCSV(pop, "distributeART.cout");
-}
+//     tEnd = clock();
+//     std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+//     writeCSV(pop, "distributeART.cout");
+// }
