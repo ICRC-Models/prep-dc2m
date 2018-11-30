@@ -3,7 +3,7 @@
 #include <time.h>
 #include <eigen3/Eigen/Dense>
 
-// clang++ -O3 -std=c++11 distributeArt.cpp csvUtil.cpp
+// clang++ -O3 -std=c++11 distributeCondoms.cpp csvUtil.cpp
 //
 
 const int hivInd = 0;
@@ -24,26 +24,26 @@ const int timeInd = 12;
 Eigen::MatrixXd readCSV(std::string filename, int cols, int rows);
 void writeCSV(Eigen::MatrixXd matrix, std::string filename);
 
-int art_cols = 5;
-int art_rows = 410;
+int condom_cols = 12; // Condom coverage is specified for each age group
+int condom_rows = 410; // One row for each time step
 
 int pop_cols = 13;
 int pop_rows = 82944;
 
-Eigen::MatrixXd art_cov = readCSV("art_cov.csv", art_cols, art_rows);
+Eigen::MatrixXd condom_cov = readCSV("condom_cov.csv", condom_cols, condom_rows);
 
 
-void distributeART(Eigen::MatrixXd &pop, int time_index){
+void distributeCondoms(Eigen::MatrixXd &pop, int time_index){
     // load parameters
 
-    Eigen::VectorXd art_cov_row = art_cov.row(time_index);
-    // std::cout << "cov row " << art_cov_row << std::endl;
-    // std::cout << art_cov_row << std::endl;
+    Eigen::VectorXd condom_cov_row = condom_cov.row(time_index);
+    // std::cout << "cov row " << condom_cov_row << std::endl;
+    // std::cout << condom_cov_row << std::endl;
     const int nHIV = 2;
     const int nAge = 12;
     const int nMale = 2;
     const int nRisk = 3;
-    const int nCD4 = 6; // len of art_cov_row
+    const int nCD4 = 6; 
     const int nVl = 6;
     const int nCirc = 2;
     const int nPrep = 2;
@@ -51,18 +51,14 @@ void distributeART(Eigen::MatrixXd &pop, int time_index){
     const int nArt = 2; // art is 0 or 1
     const int nPopRows = pop.rows();
 
-    double prop[nCD4][nArt];
-    for(int ii=0; ii<nCD4; ii++){
-        if (ii==0){
-            prop[ii][0] = 1;
-            prop[ii][1] = 0;
-        }
-        else {
-            prop[ii][0] = 1 - art_cov_row(ii-1);
-            prop[ii][1] = art_cov_row(ii-1);
-        }
-        // std::cout << "prop [" << ii << "," << 0 << "]=" << 1 - art_cov_row(ii-1) << std::endl;
-        // std::cout << "prop [" << ii << "," << 1 << "]=" << art_cov_row(ii-1) << std::endl;
+    double prop[nAge][nCondom];
+    for(int ii=0; ii<nAge; ii++){ 
+  
+            prop[ii][0] = 1 - condom_cov_row(ii);
+            prop[ii][1] = condom_cov_row(ii);
+
+        // std::cout << "prop [" << ii << "," << 0 << "]=" << 1 - condom_cov_row(ii-1) << std::endl;
+        // std::cout << "prop [" << ii << "," << 1 << "]=" << condom_cov_row(ii-1) << std::endl;
     }
 
 
@@ -76,29 +72,11 @@ void distributeART(Eigen::MatrixXd &pop, int time_index){
     // int condom[nCondom] = {0, 1};
     // int art[nArt] = {0, 1};
 
-    // find indices in pop where hiv =1;
-
-    auto randomPopRow = pop.row(102);
-    std::cout << "random pop " << randomPopRow << std::endl;
-
-    std::vector<int> hivInds1;
-    for (int ii = 0; ii<nPopRows; ii++){
-        double test = pop(ii, hivInd);
-        if (test > 0){
-            // std::cout << "test " << test <<std::endl;
-        }
-        if (pop(ii, hivInd) == 1){
-            // std::cout <<"got hiv ind" << ii << std::endl;
-            hivInds1.push_back(ii);
-        }
-    }
-
-    // initialize to all zeros
-    // count is integer right?
-    double countSum[nHIV][nAge][nMale][nRisk][nCD4][nVl][nCirc][nPrep][nCondom] = {0};
+    // initialize to all zeros - includes all the stratifying variables for summation (everything except for condom)
+    double countSum[nHIV][nAge][nMale][nRisk][nCD4][nVl][nCirc][nPrep][nArt] = {0};
 
     // used in loop
-    int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom;
+    int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, iart;
     double count;
 
     // sum over all rows in pop
@@ -118,7 +96,7 @@ void distributeART(Eigen::MatrixXd &pop, int time_index){
         ivl = pop(ii,vlInd);
         icirc = pop(ii,circInd);
         iprep = pop(ii,prepInd);
-        icondom = pop(ii,condomInd);
+        iart = pop(ii,artInd);
         // std::cout << "ihiv: " << ihiv << "\n"
         // << "iage: " << iage << "\n"
         // << "imale: " << imale << "\n"
@@ -128,15 +106,15 @@ void distributeART(Eigen::MatrixXd &pop, int time_index){
         // << "icirc: " << icirc << "\n"
         // << "iprep: " << iprep << "\n"
         // << "icondom: " << icondom << "\n" << std::endl;
-        countSum[ihiv][iage][imale][irisk][icd4][ivl][icirc][iprep][icondom] += count;
+        countSum[ihiv][iage][imale][irisk][icd4][ivl][icirc][iprep][iart] += count;
         // std::cout << "sum: " << countSum[ihiv][iage][imale][irisk][icd4][ivl][icirc][iprep][icondom] << std::endl;
     }
 
     double daSum, daProp;
-    int iart;
+    int icondom;
 
-    // finally modify pop table, only rows with hiv == 1
-    for (int rowInd : hivInds1){
+    // finally modify pop table
+    for (int rowInd=0; rowInd < nPopRows; rowInd++){
         // std:: cout << "hiv inds: " << rowInd << std::endl;
         ihiv = pop(rowInd, hivInd);
         iage = pop(rowInd, ageInd) - 1; // 1 indexed fucker
@@ -149,16 +127,14 @@ void distributeART(Eigen::MatrixXd &pop, int time_index){
         icondom = pop(rowInd, condomInd);
         iart = pop(rowInd, artInd);
 
-        daSum = countSum[ihiv][iage][imale][irisk][icd4][ivl][icirc][iprep][icondom];
-        daProp = prop[icd4][iart];
+        daSum = countSum[ihiv][iage][imale][irisk][icd4][ivl][icirc][iprep][iart];
+        daProp = prop[iage][icondom];
 
-        if(rowInd-1 == 55985 | rowInd-1 == 55986) {
-        	
-        	std::cout <<  "icd4: " << icd4 << std::endl;
-        	std::cout <<  "iart: " << iart << std::endl;
-        	std::cout << "daProp: " << daProp << std::endl;
+        if(rowInd == 0 | rowInd == 2) {
+            std::cout << "rowInd: " << rowInd << std::endl;
+            std::cout << "daSum: " << daSum << std::endl;
+            std::cout << "daProp: " << daProp << std::endl;
         }
-        
 
         pop(rowInd,countInd) = daSum * daProp;
     }
@@ -172,8 +148,8 @@ int main(){
     clock_t tEnd;
     Eigen::MatrixXd pop = readCSV("incrt.out", pop_cols, pop_rows);
     tStart = clock();
-    distributeART(pop, 409); //0 based
+    distributeCondoms(pop, 409); //0 based
     tEnd = clock();
     std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
-    writeCSV(pop, "distributeART.cout");
+    writeCSV(pop, "distributeCondoms.cout");
 }

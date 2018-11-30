@@ -39,6 +39,8 @@ condom_cov <- lapply(sort(unique(condom_coverage$age)), function(age_cat) {
   df <- condom_coverage[age == age_cat]
   interpolate(breaks = df$year, values = df$usage)
 })
+
+fwrite(condom_cov, file="condom_cov.csv")
 rm(condom_coverage)
 
 ## Proportion of population in each risk group (by age)

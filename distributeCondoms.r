@@ -6,7 +6,7 @@
 
 distributeCondoms <- function(dt, time_index) {
   
-  ## ART coverage by CD4 count
+  ## Condom coverage by age
   coverage <- as.data.table(data.frame("age" = 1:12, prop =  
       sapply(seq(1, length(condom_cov)), function(x) {
         condom_cov[[x]][time_index]

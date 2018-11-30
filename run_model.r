@@ -112,7 +112,6 @@ print(pop[41569, ])
 ## Run model
 for(tt in 1:nsteps) {
 
-  # tt <- 1
   tt <- 410
   print(tt)
 
@@ -131,10 +130,14 @@ for(tt in 1:nsteps) {
   print(end_time - start_time)
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   print("shitty index?")
-  print(pop[41575,])
   fwrite(pop, col.names=FALSE, file="distributeART.out")
   ## Distribute condom coverage
+  start_time <- Sys.time()
   distributeCondoms(pop, tt)
+  end_time <- Sys.time()
+  print("distribute condoms time")
+  print(end_time - start_time)
+  setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="distributeCondoms.out")
 
   ## Calculate statistics
