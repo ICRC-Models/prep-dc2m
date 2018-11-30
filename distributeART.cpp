@@ -172,7 +172,9 @@ int main(){
     clock_t tEnd;
     Eigen::MatrixXd pop = readCSV("incrt.out", pop_cols, pop_rows);
     tStart = clock();
+
     distributeART(pop, 409); //0 based
+
     tEnd = clock();
     std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
     writeCSV(pop, "distributeART.cout");
