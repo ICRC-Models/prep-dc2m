@@ -67,6 +67,7 @@ rm(fert_coeffs)
 fert[, gamma := 1 - exp(-gamma * tstep)]
 
 ## Write fert to be read by Cpp
+setkey(fert, age, male, cd4, art)
 fwrite(fert, col.names=FALSE, file = "fert.csv")
 
 ## Neonatal circumcision prevalence
