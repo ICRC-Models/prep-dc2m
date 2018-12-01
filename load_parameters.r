@@ -46,6 +46,7 @@ rm(condom_coverage)
 ## Proportion of population in each risk group (by age)
 risk_props <- fread("data/risk_proportions.csv")
 setkey(risk_props, age, male, risk)
+fwrite(risk_props, file = "risk_props.csv",  col.names=FALSE)
 
 ## Fertility
 fert <- fread("data/base_fertility_rate_moultrie_1990.csv")
