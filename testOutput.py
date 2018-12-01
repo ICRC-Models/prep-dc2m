@@ -17,7 +17,7 @@ class TestCSVs(unittest.TestCase):
             row += 1;
             # print(row)
             for val1, val2 in zip(row1.split(","), row2.split(",")):
-                self.assertEqual(float(val1), float(val2), "row %i"%row)
+                self.assertAlmostEqual(float(val1), float(val2), places = 7, msg = "row %i"%row)
 
     def test_distributeCondoms(self):
         lines1, lines2 = loadCSVs("distributeCondoms.out", "distributeCondoms.cout")
@@ -26,7 +26,7 @@ class TestCSVs(unittest.TestCase):
             row += 1;
             # print(row)
             for val1, val2 in zip(row1.split(","), row2.split(",")):
-                self.assertEqual(float(val1), float(val2), "row %i"%row)
+                self.assertAlmostEqual(float(val1), float(val2), places = 7, msg = "row %i"%row)
 
     def test_addBirths(self):
         lines1, lines2 = loadCSVs("addBirths.out", "addBirths.cout")
@@ -35,7 +35,7 @@ class TestCSVs(unittest.TestCase):
             row += 1;
             # print(row)
             for val1, val2 in zip(row1.split(","), row2.split(",")):
-                self.assertEqual(float(val1), float(val2), "row %i"%row)
+                self.assertAlmostEqual(float(val1), float(val2), places = 7, msg = "row %i"%row)
 
 
 
