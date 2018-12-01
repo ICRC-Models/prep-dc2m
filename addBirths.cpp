@@ -26,19 +26,26 @@ const int countInd = 10;
 const int diffInd = 11;
 const int timeInd = 12;
 
-double nncirc_prop = 0.1; // Neonatal circumcision prevalence - shouldn't we move this outside at some point?
+const double nncirc_prop = 0.1; // Proportion of births that are circumcised
+const double propMale = 0.5; // Proportion of births that are male. 
+
 
 // fert header: age,male,gamma,cd4,art
 int fert_cols = 5;
 int fert_rows = 144;
 Eigen::MatrixXd fert_mat = readCSV("fert.csv", fert_cols, fert_rows); // age, male, gamma, cd4, art
-
 const int gammaInd = 2; // Column of fert_mat that contains fertility coefficient (zero indexed)
 
 // Vertical transmission parameters - these are time-varying
 int vert_cols = 1;
 int vert_rows = 410;
 Eigen::MatrixXd vert_trans_mat = readCSV("vert_trans.csv", vert_cols, vert_rows);
+
+// Risk proportions: needed for distributing births by risk status. Only actually need the first 12 rows but not sure how to read only those ones in.
+int risk_cols = 4;
+int risk_rows = 72;
+Eigen::MatrixXd risk_props_mat = readCSV("risk_props.csv", risk_cols, risk_rows);
+const double risk_prop_ind = 0; // Column of risk_mat that contains risk proportions (zero indexed)
 
 
 void addBirths(Eigen::MatrixXd &pop, int time_index){
@@ -82,16 +89,21 @@ void addBirths(Eigen::MatrixXd &pop, int time_index){
     }
     
 
-    // Find female indicators in pop - is push_back slow? We know in advance how many indicators have male == 0
+    // Find female and baby indicators in pop - is push_back slow? We know in advance how many indicators have male == 0
      std::vector<int> maleInds0;
+     std::vector<int> ageInds0;
     for (int ii = 0; ii<nPopRows; ii++){
-        double test = pop(ii, maleInd);
-        if (test > 0){
-            // std::cout << "test " << test <<std::endl;
-        }
+
+    	// Check if male
         if (pop(ii, maleInd) == 0){
 
             maleInds0.push_back(ii);
+        }
+
+        // Check if baby
+        if (pop(ii, ageInd) == 1){
+
+            ageInds0.push_back(ii);
         }
     }
 
@@ -104,9 +116,8 @@ void addBirths(Eigen::MatrixXd &pop, int time_index){
 
     int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart;
 
-    for (int ii=0; ii<nPopRows; ii++){ // Could shorten this loop by only looping over rows for which male == 0?
-        // auto pop_row = pop.row(ii);
-        // std::cout << "row " << ii << " of " << nPopRows << std::endl;
+    for (int ii : maleInds0){ 
+
         count = pop(ii,countInd);
         if (ii==0){
             std::cout << "first line count " << count << std::endl;
@@ -142,7 +153,7 @@ void addBirths(Eigen::MatrixXd &pop, int time_index){
     std::cout << "births_from_neg: " << births_from_neg << std::endl;
     std::cout << "births_from_pos: " << births_from_pos << std::endl;
 
-// Calculate total infants born HIV+
+// Calculate total infants born HIV+ and HIV-
   double neg_births;
   double pos_births;
 
@@ -152,15 +163,83 @@ void addBirths(Eigen::MatrixXd &pop, int time_index){
   std::cout << "neg_births: " << neg_births << std::endl;
   std::cout << "pos_births: " << pos_births << std::endl;
 
-// Calculate total infants born HIV-
 
-// Distribute births added by sex
+// Distribute births into pop table
 
-// Distribute births added by circumcision status
+// For use in the loop
+  double riskProp; 
 
-// Distribute births across risk status
+  for (int rowInd : ageInds0){
 
-//
+        ihiv = pop(rowInd, hivInd);
+        iage = pop(rowInd, ageInd) - 1; // 1 indexed fucker
+        imale = pop(rowInd, maleInd);
+        irisk = pop(rowInd, riskInd) - 1; // 1 indexed fucker
+        icd4 = pop(rowInd, cd4Ind);
+        ivl = pop(rowInd, vlInd);
+        icirc = pop(rowInd, circInd);
+        iprep = pop(rowInd, prepInd);
+        icondom = pop(rowInd, condomInd);
+        iart = pop(rowInd, artInd);
+
+        double diff = 0; // Tracker for number of births
+        double mult = 1; // Multiplier for allocating proportions
+        // std::cout << "iage: " << iage << std::endl;
+
+        // Births are only allocated into these compartments. Could maybe search for these indicators outside
+     	if(iprep == 0 & icondom == 0 & iart == 0) {
+     		 
+
+	        // Find proportion of births going into this risk group
+	        riskProp = risk_props_mat(imale * nRisk + irisk, risk_prop_ind);
+	        mult = mult * riskProp;
+
+	        // Allocate across sex and circumcision status
+	        if(imale == 1) {
+	        	mult = mult * propMale;
+
+	        	if(icirc == 1) {
+	        		mult = mult * nncirc_prop;
+	        	} else {
+	        		mult = mult * (1-nncirc_prop);
+	        	}
+	        } else {
+
+	        	mult = mult * (1-propMale);
+
+	        	if(icirc == 1) { // No females circumcised
+	        		mult = 0;
+	        	} 
+	        }
+
+	        // Allocate across HIV status 
+	        if(ihiv == 0) {
+	        	if(ivl == 0 & icd4 == 0 & iart == 0) {
+	        		diff = neg_births * mult;
+	        	} 
+	        } else {
+	        	if(ivl == 1 & icd4 == 1 & iart == 0) {
+	        		diff = pos_births * mult;
+	        	} 
+	        }
+
+	         // if(diff > 1) {
+	         // 	std::cout << "male: " << imale << std::endl; 
+	         // 	std::cout << "risk: " << irisk << std::endl;
+	         // 	std::cout << "diff: " << diff << std::endl;
+	         // }
+
+
+  		// std:: cout << "rowInd: " << rowInd << std::endl;
+  		// std:: cout << "abs: " << abs(rowInd -  577) << std::endl;
+	       
+	        // Add to diff column of pop
+	         pop(rowInd, diffInd) += diff; 
+	     }
+
+
+    }
+
 
 }
 
