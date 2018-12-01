@@ -7,6 +7,7 @@ Eigen::MatrixXd readCSV(std::string filename, int cols, int rows);
 void writeCSV(Eigen::MatrixXd matrix, std::string filename);
 void distributeART(Eigen::MatrixXd &pop, int time_index);
 void distributeCondoms(Eigen::MatrixXd &pop, int time_index);
+void addBirths(Eigen::MatrixXd &pop, int time_index);
 
 int main(){
 
@@ -34,4 +35,12 @@ int main(){
     tEnd = clock();
     std::cout << "distributeCondoms time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
     writeCSV(pop, "distributeCondoms.cout");
+
+    // addBirths
+    pop = readCSV("distributeCondoms.out", pop_cols, pop_rows);
+    tStart = clock();
+    addBirths(pop, timeStep); //0 based
+    tEnd = clock();
+    std::cout << "addBirths time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+    writeCSV(pop, "addBirths.cout");
 }

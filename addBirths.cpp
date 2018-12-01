@@ -9,8 +9,8 @@
 Eigen::MatrixXd readCSV(std::string filename, int cols, int rows);
 void writeCSV(Eigen::MatrixXd matrix, std::string filename);
 
-int pop_cols = 13;
-int pop_rows = 82944;
+// int pop_cols = 13;
+// int pop_rows = 82944;
 
 const int hivInd = 0;
 const int ageInd = 1;
@@ -243,13 +243,13 @@ void addBirths(Eigen::MatrixXd &pop, int time_index){
 
 }
 
-int main(){
-    clock_t tStart;
-    clock_t tEnd;
-    Eigen::MatrixXd pop = readCSV("distributeCondoms.out", pop_cols, pop_rows);
-    tStart = clock();
-    addBirths(pop, 409);
-    tEnd = clock();
-    std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
-    writeCSV(pop, "addBirths.cout");
-}
+// int main(){
+//     clock_t tStart;
+//     clock_t tEnd;
+//     Eigen::MatrixXd pop = readCSV("distributeCondoms.out", pop_cols, pop_rows);
+//     tStart = clock();
+//     addBirths(pop, 409);
+//     tEnd = clock();
+//     std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+//     writeCSV(pop, "addBirths.cout");
+// }
