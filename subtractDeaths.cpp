@@ -85,11 +85,11 @@ void subtractDeaths(Eigen::MatrixXd &pop, int time_index){
 
     			int rowInd;
 				rowInd =  ii * nCD4 * nArt + jj * nArt + kk;
-	    		std::cout << "ii : " << ii << std::endl;
-	    		std::cout << "jj : " << jj << std::endl;
-	    		std::cout << "kk : " << kk << std::endl;
-	    		std::cout << "row Ind: " << rowInd << std::endl;
-	    		std::cout << "alpha: " << hiv_mort_mat(rowInd, alphaInd) << std::endl;
+	    		// std::cout << "ii : " << ii << std::endl;
+	    		// std::cout << "jj : " << jj << std::endl;
+	    		// std::cout << "kk : " << kk << std::endl;
+	    		// std::cout << "row Ind: " << rowInd << std::endl;
+	    		// std::cout << "alpha: " << hiv_mort_mat(rowInd, alphaInd) << std::endl;
 	    		hiv_mort[ii][jj][kk] = hiv_mort_mat(rowInd, alphaInd); // This line requires hiv_mort_mat to be ordered by age, cd4, and ART status. 
 
 	    		
