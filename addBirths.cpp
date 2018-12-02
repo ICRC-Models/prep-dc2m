@@ -75,7 +75,7 @@ void addBirths(Eigen::MatrixXd &pop, int time_index){
     	for(int jj = 0; jj < nCD4; jj++){
     		for(int kk = 0; kk < nArt; kk++) {
 
-    			rowInd = nAge * ii + nArt * jj + kk;
+    			rowInd = ii * (nCD4*nArt) + jj * nArt + kk;
 
     			// std::cout << "ii : " << ii << std::endl;
     			// std::cout << "jj : " << jj << std::endl;
