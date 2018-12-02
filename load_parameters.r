@@ -85,6 +85,7 @@ fwrite(as.data.table(vert_trans), col.names=FALSE, file = "vert_trans.csv")
 back_mort <- fread("data/background_mortality.csv")
 back_mort[, mu := 1 - exp(-mu * tstep)] # Adjust for time step and convert to risk
 setkey(back_mort, age, male)
+fwrite(back_mort, col.names = FALSE, file = "back_mort.csv")
 
 ## HIV-relative mortality
 hiv_mort <- fread("data/hiv_mortality.csv")
@@ -92,6 +93,7 @@ hiv_mort <- rbindlist(lapply(0:1, function(x, d) data.table(d, art = x), d = hiv
 hiv_mort[art == 1, alpha := 0]
 hiv_mort[, c("hiv", "alpha") := list(1, 1 - exp(-alpha * tstep))]
 setkey(hiv_mort, hiv, age, cd4, art)
+fwrite(hiv_mort, col.names = FALSE, file = "hiv_mort.csv")
 
 ## Disease progression - cd4_duration and vl_duration are average duration spent in that CD4 or VL category (respectively) in years
 dis_prog <- fread("data/disease_progression.csv")
