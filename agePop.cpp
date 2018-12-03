@@ -64,8 +64,7 @@ void agePop(Eigen::MatrixXd &pop) {
 	    // Efflux: aging out of the compartment. 1/5 of 5-year age groups leave each compartment
 	    pop(rowInd, diffInd) -= (0.2 * time_step) * pop(rowInd, countInd);
 
-	    //Influx: add this to compartment of one year older (for all but the last age group). This seems easier in an array.
-	    rowInd_plus_one = rowInd + nMale + imale*nRisk + irisk*nCD4 + icd4*nVl + ivl*nCirc + icirc*nCondom * iprep*nCondom + icondom*nArt * iart;
+	    //Influx: add this to compartment of one year older (for all but the last age group). This seems easier in an arrayy
 	    rowInd_plus_one = rowInd + nMale*nRisk*nCD4*nVl*nCirc*nCondom*nPrep*nArt;
 
 	    if(iage < (nAge - 1)) {

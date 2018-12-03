@@ -182,6 +182,7 @@ for(tt in 1:nsteps) {
   progressDisease(pop, tstep)
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="progressDisease.out")
+  
   ## Transmission
   ## Calculate the mixing matrix
   calcMixMat(pop, mixing_matrix, tt)

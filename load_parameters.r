@@ -100,6 +100,9 @@ dis_prog <- fread("data/disease_progression.csv")
 dis_prog$hiv <- 1
 dis_prog$art <- 0
 
+setorder(dis_prog, male, vl, cd4)
+fwrite(dis_prog, col.names = FALSE, file = "dis_prog.csv")
+
 ## Initialize mixing matrix.
 mixing_matrix <- as.data.table(expand.grid(male, age, risk, male, age, risk))
 

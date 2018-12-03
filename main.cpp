@@ -10,6 +10,7 @@ void distributeCondoms(Eigen::MatrixXd &pop, int time_index);
 void addBirths(Eigen::MatrixXd &pop, int time_index);
 void subtractDeaths(Eigen::MatrixXd &pop, int time_index);
 void agePop(Eigen::MatrixXd &pop);
+void progressDisease(Eigen::MatrixXd &pop);
 
 int main(){
 
@@ -56,10 +57,18 @@ int main(){
     //agePop
     pop = readCSV("subtractDeaths.out", pop_cols, pop_rows);
     tStart = clock();
-    agePop(pop); //0 based
+    agePop(pop);
     tEnd = clock();
     std::cout << "agePop time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
     writeCSV(pop, "agePop.cout");
+
+    //progressDisease
+    pop = readCSV("agePop.out", pop_cols, pop_rows);
+    tStart = clock();
+    progressDisease(pop);
+    tEnd = clock();
+    std::cout << "progressDisease time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+    writeCSV(pop, "progressDisease.cout");
 
 
 }
