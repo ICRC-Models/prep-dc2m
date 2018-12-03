@@ -140,7 +140,7 @@ void addBirths(Eigen::MatrixXd &pop, int time_index){
         	gamma = fert[iage][icd4][iart];
         	
 
-        	if(ihiv == 0 | iart == 1) { // Treats HIV+ women with ART == 1 to be negative - could change this later.
+        	if(ihiv == 0 || iart == 1) { // Treats HIV+ women with ART == 1 to be negative - could change this later.
         		births_from_neg += gamma*count;
         	}
      		else {
@@ -214,11 +214,11 @@ void addBirths(Eigen::MatrixXd &pop, int time_index){
 
 	        // Allocate across HIV status 
 	        if(ihiv == 0) {
-	        	if(ivl == 0 & icd4 == 0 & iart == 0) {
+	        	if(ivl == 0 && icd4 == 0 && iart == 0) {
 	        		diff = neg_births * mult;
 	        	} 
 	        } else {
-	        	if(ivl == 1 & icd4 == 1 & iart == 0) {
+	        	if(ivl == 1 && icd4 == 1 && iart == 0) {
 	        		diff = pos_births * mult;
 	        	} 
 	        }
