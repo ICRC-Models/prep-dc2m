@@ -185,28 +185,52 @@ for(tt in 1:nsteps) {
   
   ## Transmission
   ## Calculate the mixing matrix
+  start_time <- Sys.time()
   calcMixMat(pop, mixing_matrix, tt)
+  end_time <- Sys.time()
+  print("calcMixMat time")
+  print(end_time - start_time)
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="calcMixMat.out")
 
   ## Calculate adjusted partnerships per year
+  start_time <- Sys.time() 
   adjustPartnerships(pop, mixing_matrix)
+  end_time <- Sys.time()
+  print("adjustPartnerships time")
+  print(end_time - start_time)
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="adjustPartnerships.out")
   ## Calculate lambda
+  start_time <- Sys.time() 
   calcLambda(pop, mixing_matrix, adjusted_partners)
+  end_time <- Sys.time()
+  print("calcLambda time")
+  print(end_time - start_time)
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="calcLambda.out")
+  
   ## Transmit infections
+  start_time <- Sys.time() 
   transmit(pop, lambda_mat)
+  end_time <- Sys.time()
+  print("transmit time")
+  print(end_time - start_time)
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="transmit.out")
+  
   # Compute end-of-year population and set difference back to zero for next iteration of loop
   pop[, c("count", "diff") := list(count + diff, 0)]
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="endPop.out")
+  
+  
   # Adjust population to match risk prevalence
+  start_time <- Sys.time() 
   riskAdjust(pop)
+  end_time <- Sys.time()
+  print("riskAdjust time")
+  print(end_time - start_time)
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="riskAdjust.out")
   # Increment time step
