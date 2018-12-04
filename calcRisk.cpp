@@ -4,6 +4,7 @@
 #include <eigen3/Eigen/Dense>
 #include <fstream>
 #include <iomanip>
+#include <cmath>
 
 // clang++ -O3 -std=c++11 calcRisk.cpp csvUtil.cpp
 
@@ -53,6 +54,8 @@ int partners_rows = 72;
 Eigen::MatrixXd partners_mat = readCSV("partners_mat.csv", partners_cols, partners_rows); // age, male, risk, partners
 int partners_ind = 3; // Column of partners_mat containing the number of partners.
 
+double partners[nAge][nMale][nRisk] = {0}; // Array for use later
+
 // Deltas: these parameters govern the mixing pattern for "completely assortative" mixing by age, which isn't truly "completely assortative" but is allowed to vary. The delta that gets loaded here is the proportion of partnerships that are with the same age group. 1-delta is the proportion that are with the age group one above (females) or below (males).
 int deltas_cols = 1;
 int deltas_rows = 410; // This is time-step dependent
@@ -61,9 +64,6 @@ Eigen::MatrixXd deltas = readCSV("deltas_smoothed.csv", deltas_cols, deltas_rows
 double assortMatAgeSex[nAge][nMale][nAge][nMale] = {0};
 double assortMatRisk[nRisk][nRisk] = {0};
 
-// Mixing matrix for completely assortative mixing
-// double assortMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
-
 // Epislons: these parameters govern the extent to which mixing is random or assortative. Can split this up by age and risk but this might require refactoring the code (see how I did this in R)
 int epsilons_cols = 1;
 int epsilons_rows = 410; // This is time-step dependent
@@ -71,6 +71,14 @@ Eigen::MatrixXd epsilons = readCSV("epsilons_smoothed.csv", epsilons_cols, epsil
 
 // Mixing matrix for completely random mixing
 double randomMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
+
+// Totals - these are used by more than one function
+double total_partners_sex[nMale] = {0};
+double total_partners_sex_age[nAge][nMale] = {0};
+double total_partners_sex_age_risk[nAge][nMale][nRisk] = {0};
+
+// Adjusted partners: array of dim mixMat containing number of adjusted partners for each partnership type
+double adjustedPartnersMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
 
 void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 	 const int nPopRows = pop.rows();
@@ -183,7 +191,6 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 	// Calculate mixing matrix for completely random mixing
 
 	// Populate partners array
-	double partners[nAge][nMale][nRisk] = {0};
 
 	for(int ii = 0; ii < partners_rows; ii++) {
 	
@@ -193,11 +200,6 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 	
 		partners[iage][imale][irisk] = partners_mat(ii, partners_ind) * time_step;
 	}
-
-	// Totals
-	double total_partners_sex[nMale] = {0};
-	double total_partners_sex_age[nAge][nMale] = {0};
-	double total_partners_sex_age_risk[nAge][nMale][nRisk] = {0};
 
 
 	int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart;
@@ -388,18 +390,204 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 
 }
 
-// void adjustPartnerships() { what are the inputs needed here?
-	
-// }
+void adjustPartnerships(Eigen::MatrixXd &pop) { 
 
-// void calcRisk() { // what are the inputs needed here?
+	// Verify that the correct mixing matrix is getting loaded here
+	std::cout << "Checking input mixing matrix: " << std::endl;
+	for(int ii = 0; ii < nAge; ii++) {
+		for(int jj = 0; jj < nMale; jj++) {
+			for(int kk = 0; kk < nRisk; kk++) {
+				double counter = 0;
+				for(int ii_p = 0; ii_p < nAge; ii_p++) {
+					for(int jj_p = 0; jj_p < nMale; jj_p++) {
+						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+							counter += mixMat[ii][jj][kk][ii_p][jj_p][kk_p];
+						}
+					}
+				}
+				if(abs(counter - 1) > 1e-5) {
+					std::cout << "ii: " << ii << std::endl;
+					std::cout << "jj: " << jj << std::endl;
+					std::cout << "kk: " << kk << std::endl;
+					std::cout << "counter: " << counter << std::endl;
+				}
+			}
+		}
+	}
+
+	// Calculate total number of partners reported by males and females
+	// Multiply mixing matrix by total partners by age/sex/risk
+	double sumsMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
+
+	for(int ii = 0; ii < nAge; ii++) {
+		for(int jj = 0; jj < nMale; jj++) {
+			for(int kk = 0; kk < nRisk; kk++) {
+				for(int ii_p = 0; ii_p < nAge; ii_p++) {
+					for(int jj_p = 0; jj_p < nMale; jj_p++) {
+						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+							sumsMat[ii][jj][kk][ii_p][jj_p][kk_p] = mixMat[ii][jj][kk][ii_p][jj_p][kk_p] * total_partners_sex_age_risk[ii][jj][kk];
+						}
+					}
+				}
+			}
+		}
+	}
 
 
-	// calcMixMat
+	// For each partnership type, compare reported number of partners by males and females 
+	// Divide male by female to calculate the discrepancy
+	// Populate a discrepancy array (of dim mixMat) that corresponds to male reports/female reports for that partnership combination
 
-	// adjustPartnerships
+	double male_reports;
+	double female_reports;
+	double disc;
 
-	// calcLambda
+	double discMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
+
+	for(int ii = 0; ii < nAge; ii++) {
+		for(int jj = 0; jj < nMale; jj++) {
+			for(int kk = 0; kk < nRisk; kk++) {
+				for(int ii_p = 0; ii_p < nAge; ii_p++) {
+					for(int jj_p = 0; jj_p < nMale; jj_p++) {
+						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+
+							if(jj != jj_p) { // Only heterosexual partnerships
+								if(jj == 0) { // Females
+
+									female_reports = sumsMat[ii][jj][kk][ii_p][jj_p][kk_p];
+									male_reports = sumsMat[ii_p][jj_p][kk_p][ii][jj][kk];
+									disc = male_reports/female_reports;
+
+									discMat[ii][jj][kk][ii_p][jj_p][kk_p] = male_reports/female_reports;
+
+								} else if(jj == 1) { // Males
+
+									male_reports = sumsMat[ii][jj][kk][ii_p][jj_p][kk_p];
+									female_reports = sumsMat[ii_p][jj_p][kk_p][ii][jj][kk];
+									disc = male_reports/female_reports;
+
+									discMat[ii][jj][kk][ii_p][jj_p][kk_p] = male_reports/female_reports;
+
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// std::cout << "Printing discrepancy matrix: " << std::endl;
+	// for(int ii = 0; ii < nAge; ii++) {
+	// 	for(int jj = 0; jj < nMale; jj++) {
+	// 		for(int kk = 0; kk < nRisk; kk++) {
+	// 			for(int ii_p = 0; ii_p < nAge; ii_p++) {
+	// 				for(int jj_p = 0; jj_p < nMale; jj_p++) {
+	// 					for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+
+	// 						if(jj != jj_p) {
+
+	// 							std::cout << "ii: " << ii << std::endl;
+	// 							std::cout << "jj: " << jj << std::endl;
+	// 							std::cout << "kk: " << kk << std::endl;
+	// 							std::cout << "ii_p: " << ii_p << std::endl;
+	// 							std::cout << "jj_p: " << jj_p << std::endl;
+	// 							std::cout << "kk_p: " << kk_p << std::endl;
+	// 							std::cout << "disc: " << discMat[ii][jj][kk][ii_p][jj_p][kk_p] << std::endl;
+	// 						}
+		
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
+
+	// Calculate adjusted partnerships per year based on theta (controls the degree to which female or male reports are believed)
+	// adjusted_partners = partners * discrepancy ^ (-(1 - theta))
+
+	// Could move this into the preceding loop?
+	for(int ii = 0; ii < nAge; ii++) {
+		for(int jj = 0; jj < nMale; jj++) {
+			for(int kk = 0; kk < nRisk; kk++) {
+				for(int ii_p = 0; ii_p < nAge; ii_p++) {
+					for(int jj_p = 0; jj_p < nMale; jj_p++) {
+						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+
+							if(jj != jj_p) { // Only heterosexual partnerships allowed
+
+								if(jj == 0) { // Females
+
+									adjustedPartnersMat[ii][jj][kk][ii_p][jj_p][kk_p] = partners[ii][jj][kk] * std::pow(discMat[ii][jj][kk][ii_p][jj_p][kk_p], theta);
+
+								} else if (jj == 1) { // Males
+
+									adjustedPartnersMat[ii][jj][kk][ii_p][jj_p][kk_p] = partners[ii][jj][kk] * std::pow(discMat[ii][jj][kk][ii_p][jj_p][kk_p], -(1 - theta));
+
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// std::cout << "Printing adjusted partners matrix: " << std::endl;
+	// for(int ii = 0; ii < nAge; ii++) {
+	// 	for(int jj = 0; jj < nMale; jj++) {
+	// 		for(int kk = 0; kk < nRisk; kk++) {
+	// 			for(int ii_p = 0; ii_p < nAge; ii_p++) {
+	// 				for(int jj_p = 0; jj_p < nMale; jj_p++) {
+	// 					for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+
+	// 						if(jj != jj_p) {
+
+	// 							std::cout << "ii: " << ii << std::endl;
+	// 							std::cout << "jj: " << jj << std::endl;
+	// 							std::cout << "kk: " << kk << std::endl;
+	// 							std::cout << "ii_p: " << ii_p << std::endl;
+	// 							std::cout << "jj_p: " << jj_p << std::endl;
+	// 							std::cout << "kk_p: " << kk_p << std::endl;
+	// 							std::cout << "adjusted_partners: " << adjustedPartnersMat[ii][jj][kk][ii_p][jj_p][kk_p] << std::endl;
+	// 						}
+		
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }	
+
+	// Output array to match R format - maybe this can be moved into a separate function? Just for unit testing.
+	std::ofstream adjustedPartnersMatOut ("adjusted_partners.cout");
+	if(adjustedPartnersMatOut.is_open()){
+
+		for(int ii = 0; ii < nAge; ii++) {
+			for(int jj = 0; jj < nMale; jj++) {
+				for(int kk = 0; kk < nRisk; kk++) {
+					for(int ii_p = 0; ii_p < nAge; ii_p++) {
+						for(int jj_p = 0; jj_p < nMale; jj_p++) {
+							for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+
+								if(jj != jj_p) { // Don't print same-sex mixing, since those rows are dropped from the R output
+
+									adjustedPartnersMatOut << (ii+1) << "," << jj << "," << (kk+1) << "," << (ii_p + 1) << ","  << (kk_p + 1) << ","; 
+									adjustedPartnersMatOut << std::fixed << std::setprecision(15) << adjustedPartnersMat[ii][jj][kk][ii_p][jj_p][kk_p] << "\n";
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+	}
+}
+
+// void calcLambda() { // what are the inputs needed here?
+
+
 // }
 
 
@@ -410,8 +598,15 @@ int main(){
     Eigen::MatrixXd pop = readCSV("progressDisease.out", pop_cols, pop_rows);
     tStart = clock();
     calcMixMat(pop, 409);
-    // calcRisk(pop, 409);
     tEnd = clock();
-   	std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+    std::cout << "calcMixMat time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+    tStart = clock();
+    adjustPartnerships(pop);
+    tEnd = clock();
+    std::cout << "adjustPartnerships time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+
+    // calcRisk(pop, 409);
+    
+   	
     // writeCSV(pop, "calcRisk.cout");
 }

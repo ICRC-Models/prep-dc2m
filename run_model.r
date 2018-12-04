@@ -191,10 +191,10 @@ for(tt in 1:nsteps) {
   print("calcMixMat time")
   print(end_time - start_time)
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
-  fwrite(pop, col.names=FALSE, file="calcMixMat.out")
+  ## fwrite(pop, col.names=FALSE, file="calcMixMat.out")
   
   setorder(mixing_matrix, age, male, risk, age_p, male_p, risk_p)
-  setcolorder(mixing_matrix, c("age", "male", "risk", "age_p", "male_p", "risk_p"))
+  setcolorder(mixing_matrix, c("age", "male", "risk", "age_p", "male_p", "risk_p", "prop"))
   fwrite(mixing_matrix, col.names = FALSE, file = "mixing_matrix.out")
 
   ## Calculate adjusted partnerships per year
@@ -203,8 +203,11 @@ for(tt in 1:nsteps) {
   end_time <- Sys.time()
   print("adjustPartnerships time")
   print(end_time - start_time)
-  setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
-  fwrite(pop, col.names=FALSE, file="adjustPartnerships.out")
+  setorder(adjusted_partners, age, male, risk, age_p, risk_p)
+  setcolorder(adjusted_partners, c("age", "male", "risk", "age_p", "risk_p", "adjusted_partners"))
+  fwrite(adjusted_partners, col.names = FALSE, file = "adjusted_partners.out")
+  ## fwrite(pop, col.names=FALSE, file="adjustPartnerships.out")
+  
   ## Calculate lambda
   start_time <- Sys.time() 
   calcLambda(pop, mixing_matrix, adjusted_partners)
