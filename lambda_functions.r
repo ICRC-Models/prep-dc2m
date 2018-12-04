@@ -70,6 +70,7 @@ calcMixMat <- function(dt, mix_mat, time_index = tt) {
   ## Checks - note that for Roger's paper the males in the youngest age group and females in the oldest age group have proportions less than 1.  This is because the delta assignment is based off of partnerships with older males and younger females.  Roger's paper assumed the effect was negligible since the age groups aren't as relevant for HIV.  We get around this with the last lines of code in the delta section.
   mix_mat[, sum(prop), by = list(male, age, risk)]
   
+  
 }
 
 ## Adjust number of partnerships. The number of partnerships is adjusted for differences in reported number of sexual partners between males and females. The global parameter "theta" determines whether the difference is driven by males or females, where theta = 1 indicates entirely male-driven and theta = 0 indicates entirely female-driven.

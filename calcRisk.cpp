@@ -2,6 +2,8 @@
 #include <vector>
 #include <time.h>
 #include <eigen3/Eigen/Dense>
+#include <fstream>
+#include <iomanip>
 
 // clang++ -O3 -std=c++11 calcRisk.cpp csvUtil.cpp
 
@@ -65,7 +67,7 @@ double assortMatRisk[nRisk][nRisk] = {0};
 // Epislons: these parameters govern the extent to which mixing is random or assortative. Can split this up by age and risk but this might require refactoring the code (see how I did this in R)
 int epsilons_cols = 1;
 int epsilons_rows = 410; // This is time-step dependent
-Eigen::MatrixXd epsilons = readCSV("epsilons_mat.csv", epsilons_cols, epsilons_rows);
+Eigen::MatrixXd epsilons = readCSV("epsilons_smoothed.csv", epsilons_cols, epsilons_rows);
 
 // Mixing matrix for completely random mixing
 double randomMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
@@ -271,6 +273,23 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 		}
 	}
 
+	// for(int ii = 0; ii < nAge; ii++) {
+	// 	for(int jj = 0; jj < nMale; jj++) {
+	// 		std::cout << "Proportion of partners by age and sex: " << std::endl;
+	// 		std::cout << "age: " << ii << "; " << "male: " << jj << "; " << prop_age_by_sex[ii][jj] << std::endl;
+	// 	}
+	// }
+
+	// for(int ii = 0; ii < nAge; ii++) {
+	// 	for(int jj = 0; jj < nMale; jj++) {
+	// 		for(int kk = 0; kk < nRisk; kk++) {
+	// 		std::cout << "Proportion of partners by age and sex and risk: " << std::endl;
+	// 		std::cout << "age: " << ii << "; " << "male: " << jj << "; " << "risk: " << kk << "; " <<  prop_risk_by_age_sex[ii][jj][kk] << std::endl;
+	// 		}
+	// 	}
+	// }
+
+
 
 	// Calculate mixing matrix: weighted average of random mixing and assortative mixing
 
@@ -289,9 +308,25 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 					for(int jj_p = 0; jj_p < nMale; jj_p++) {
 						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
 
+							if(jj != jj_p) { // Only heterosexual mixing allowed
+
 							pr_age = prop_age_by_sex[ii_p][jj_p] * epsilon_age + assortMatAgeSex[ii][jj][ii_p][jj_p] * (1 - epsilon_age);
+
+							// std::cout << "ii_p: " << ii_p << std::endl;
+							// std::cout << "jj_p: " << jj_p << std::endl;
+							// std::cout << "kk_p: " << kk_p << std::endl;
+
+							// std::cout << "prop_age_by_sex[ii_p][jj_p]: " << prop_age_by_sex[ii_p][jj_p] << std::endl;
+							// std::cout << "epsilon_age: " << epsilon_age << std::endl;
+							// std::cout << "assortMatAgeSex[ii][jj][ii_p][jj_p]: " << assortMatAgeSex[ii][jj][ii_p][jj_p] << std::endl;
+							// std::cout << "(1-epsilon_age): " << (1 - epsilon_age) << std::endl;
+							// std::cout << "pr_age: " << pr_age << std::endl;
+
+
 							pr_risk_given_age = prop_risk_by_age_sex[ii_p][jj_p][kk_p] * epsilon_risk + assortMatRisk[kk][kk_p] * (1 - epsilon_risk);
 							mixMat[ii][jj][kk][ii_p][jj_p][kk_p] = pr_age * pr_risk_given_age;
+
+							}
 
 						}
 					}
@@ -322,6 +357,34 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 			}
 		}
 	}
+
+
+	// Output array to match R format - maybe this can be moved into a separate function? Just for unit testing.
+	std::ofstream mixMatOut ("mixing_matrix.cout");
+	if(mixMatOut.is_open()){
+
+		for(int ii = 0; ii < nAge; ii++) {
+			for(int jj = 0; jj < nMale; jj++) {
+				for(int kk = 0; kk < nRisk; kk++) {
+					for(int ii_p = 0; ii_p < nAge; ii_p++) {
+						for(int jj_p = 0; jj_p < nMale; jj_p++) {
+							for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+
+								if(jj != jj_p) { // Don't print same-sex mixing, since those rows are dropped from the R output
+
+									mixMatOut << (ii+1) << "," << jj << "," << (kk+1) << "," << (ii_p + 1) << "," << jj_p << "," << (kk_p + 1) << ","; 
+									mixMatOut << std::fixed << std::setprecision(15) << mixMat[ii][jj][kk][ii_p][jj_p][kk_p] << "\n";
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+	}
+	
+
 
 }
 

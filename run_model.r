@@ -192,6 +192,10 @@ for(tt in 1:nsteps) {
   print(end_time - start_time)
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file="calcMixMat.out")
+  
+  setorder(mixing_matrix, age, male, risk, age_p, male_p, risk_p)
+  setcolorder(mixing_matrix, c("age", "male", "risk", "age_p", "male_p", "risk_p"))
+  fwrite(mixing_matrix, col.names = FALSE, file = "mixing_matrix.out")
 
   ## Calculate adjusted partnerships per year
   start_time <- Sys.time() 
