@@ -61,7 +61,7 @@ Eigen::MatrixXd deltas = readCSV("deltas_mat.csv", deltas_cols, deltas_rows);
 // Mixing matrix for completely assortative mixing
 double assortMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
 
-// Epislons: these parameters govern the extent to which mixing is random or assortative. Can split this up by age and risk.
+// Epislons: these parameters govern the extent to which mixing is random or assortative. Can split this up by age and risk but this might require refactoring the code (see how I did this in R)
 int epsilons_cols = 1;
 int epsilons_rows = 410; // This is time-step dependent
 Eigen::MatrixXd epsilons = readCSV("epsilons_mat.csv", epsilons_cols, epsilons_rows);
@@ -74,7 +74,7 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 
 	// Define mixing matrix for completely assortative mixing
 
-	// Define epsilons
+	// Define epsilons. If I want different epsilons for age and risk I'll need to change this (and think carefully about whether code is still correct)
 	int epsilon_age = epsilons(time_index, 0);
 	int epsilon_risk = epsilons(time_index, 0);
 
@@ -300,7 +300,7 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 
 
 	// Proportions
-	// Proprotion of partners, by each for each sex (12x2)
+	// Proportion of partners, by each for each sex (12x2)
 	double prop_age_by_sex[nAge][nMale] = {0};
 
 	for(int ii = 0; ii < nAge; ii++) {
@@ -373,29 +373,43 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 	}
 
 
+	// Calculate final mixing matrix - weighted average of random and assortative
+	for(int ii = 0; ii < nAge; ii++) {
+		for(int jj = 0; jj < nMale; jj++) {
+			for(int kk = 0; kk < nRisk; kk++) {
+				for(int ii_p = 0; ii_p < nAge; ii_p++) {
+					for(int jj_p = 0; jj_p < nMale; jj_p++) {
+						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+							
+							mixMat[ii][jj][kk][ii_p][jj_p][kk_p] = randomMat[ii][jj][kk][ii_p][jj_p][kk_p] * epsilon_risk * epsilon_age + assortMat[ii][jj][kk][ii_p][jj_p][kk_p] * (1-epsilon_risk) * (1-epsilon_age);
+						}
+					}
+				}
+			}
+		}
+	}
 
-	// // Proportion of partnerships, by age for each sex: 2x12. Could combine this with the loop above in a smart way.
-	// double prop_age[nMale][nAge] = {0};
-
-	// for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
-
-	// 	double sum = 0; 
-
- //        iage = pop(rowInd,ageInd) - 1; // 1 indexed fucker
- //        imale = pop(rowInd,maleInd);
- //        irisk = pop(rowInd,riskInd) - 1; // 1 indexed fucker
-
- //        sum = (pop(rowInd, countInd) * partners[iage][imale][irisk]);
-	// 	total_partners_sex[imale] += sum;
-
-	// }
-
-
-	// Proportion of partnerships from a given age that are in each risk group, for each sex: 2x12x3
-
-	// Final random mixing matrix should be 2x12x3x2x12x3 matrix, with summation in each (?) dimension equal to 1 (at least certainly for the first three dimensions)
-
-
+	// Verify that final mixing matrix sums to 1
+	for(int ii = 0; ii < nAge; ii++) {
+		for(int jj = 0; jj < nMale; jj++) {
+			for(int kk = 0; kk < nRisk; kk++) {
+				double counter = 0;
+				for(int ii_p = 0; ii_p < nAge; ii_p++) {
+					for(int jj_p = 0; jj_p < nMale; jj_p++) {
+						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+							counter += mixMat[ii][jj][kk][ii_p][jj_p][kk_p];
+						}
+					}
+				}
+				if(abs(counter - 1) > 1e-5) {
+					std::cout << "ii: " << ii << std::endl;
+					std::cout << "jj: " << jj << std::endl;
+					std::cout << "kk: " << kk << std::endl;
+					std::cout << "counter: " << counter << std::endl;
+				}
+			}
+		}
+	}
 
 }
 
