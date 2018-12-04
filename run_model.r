@@ -206,7 +206,6 @@ for(tt in 1:nsteps) {
   setorder(adjusted_partners, age, male, risk, age_p, risk_p)
   setcolorder(adjusted_partners, c("age", "male", "risk", "age_p", "risk_p", "adjusted_partners"))
   fwrite(adjusted_partners, col.names = FALSE, file = "adjusted_partners.out")
-  ## fwrite(pop, col.names=FALSE, file="adjustPartnerships.out")
   
   ## Calculate lambda
   start_time <- Sys.time() 
@@ -214,8 +213,10 @@ for(tt in 1:nsteps) {
   end_time <- Sys.time()
   print("calcLambda time")
   print(end_time - start_time)
-  setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
-  fwrite(pop, col.names=FALSE, file="calcLambda.out")
+  
+  setorder(lambda_mat, age, male, risk)
+  setcolorder(lambda_mat, c("age", "male", "risk", "lambda"))
+  fwrite(lambda_mat, col.names = FALSE, file = "lambda_mat.out")
   
   ## Transmit infections
   start_time <- Sys.time() 

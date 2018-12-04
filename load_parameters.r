@@ -171,7 +171,8 @@ betas[, transmission_risk := 1 - (1 - chi) ^ acts]
 
 ## Risk reduction for ART usage in HIV positive partner
 betas[art_p == 1, transmission_risk := transmission_risk * 0.08]
-
+setorder(betas, male, risk, vl_p, art_p)
+fwrite(betas, col.names = FALSE, file = "betas.csv")
 
 ## Risk reduction for HIV-negative partner based on intervention usage
 risk_reduction <- fread("data/risk_reduction.csv")

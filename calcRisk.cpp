@@ -80,6 +80,16 @@ double total_partners_sex_age_risk[nAge][nMale][nRisk] = {0};
 // Adjusted partners: array of dim mixMat containing number of adjusted partners for each partnership type
 double adjustedPartnersMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
 
+// Transmission risk parameters based on number of sex acts, male, and viral load/ART status of partner
+int betas_cols = 7;
+int betas_rows = 72;
+Eigen::MatrixXd betas_mat = readCSV("betas.csv", betas_cols, betas_rows);
+int transmissionRiskInd = 6; // Column of betas_mat containing transmission risk
+
+// Lambda matrix: final transmission risk, by age, sex, and risk. Not a mixing matrix (does not contain indices of partners). Calculated from lambda mixing matrix
+double lambdaMat[nAge][nMale][nRisk] = {0};
+
+
 void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 	 const int nPopRows = pop.rows();
 
@@ -390,7 +400,7 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 
 }
 
-void adjustPartnerships(Eigen::MatrixXd &pop) { 
+void adjustPartnerships() { 
 
 	// Verify that the correct mixing matrix is getting loaded here
 	std::cout << "Checking input mixing matrix: " << std::endl;
@@ -585,10 +595,224 @@ void adjustPartnerships(Eigen::MatrixXd &pop) {
 	}
 }
 
-// void calcLambda() { // what are the inputs needed here?
+void calcLambda(Eigen::MatrixXd &pop) { 
+
+	const int nPopRows = pop.rows();
+
+	// Populate transmission risk array by partnership - should be defined outside of the function
+	double betas[nMale][nRisk][nVl][nArt] = {0};
+
+	int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart, ivl_p, iart_p; // For use inside the loop
+	for(int rowInd = 0; rowInd < betas_rows; rowInd++) {
+
+		// Identify what the columns in betas_mat correspond to
+		imale = betas_mat(rowInd, 0);
+		irisk = betas_mat(rowInd, 1) - 1; // 1 indexed
+		ivl_p = betas_mat(rowInd, 2);
+		iart_p = betas_mat(rowInd, 3);
+
+		betas[imale][irisk][ivl_p][iart_p] = betas_mat(rowInd, transmissionRiskInd);
+
+	}
+
+	// std::cout << "Printing betas mat: " << std::endl;
+	// for(int ii = 0; ii < nMale; ii++) {
+	// 	for(int jj = 0; jj < nRisk; jj++) {
+	// 		for(int kk = 0; kk < nVl; kk++) {
+	// 			for (int ll = 0; ll < nArt; ll ++) {
+
+	// 				std::cout << "ii: " << ii << std::endl;
+	// 				std::cout << "jj: " << jj << std::endl;
+	// 				std::cout << "kk: " << kk << std::endl;
+	// 				std::cout << "ll: " << ll << std::endl;
+	// 				std::cout << "transmission risk: " << betas[ii][jj][kk][ll] << std::endl;
 
 
-// }
+	// 			}
+	// 		}
+	// 	}
+	// }
+
+
+	// Calculate number of HIV+ people in each ART and viral load category by age, sex, and risk
+	double total_hivpos_age_sex_risk_vl_art[nAge][nMale][nRisk][nVl][nArt] = {0};
+
+	// Calculate total number of people in each age, sex, and risk category
+	double total_age_sex_risk[nAge][nMale][nRisk] = {0};
+
+	for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
+
+		ihiv = pop(rowInd, hivInd);
+        iage = pop(rowInd,ageInd) - 1; // 1 indexed fucker
+        imale = pop(rowInd,maleInd);
+        irisk = pop(rowInd,riskInd) - 1; // 1 indexed fucker
+        ivl = pop(rowInd, vlInd);
+        iart = pop(rowInd, artInd);
+
+        if(ihiv == 1) {
+
+        	total_hivpos_age_sex_risk_vl_art[iage][imale][irisk][ivl][iart] += pop(rowInd, countInd);
+
+        }
+
+        total_age_sex_risk[iage][imale][irisk] += pop(rowInd, countInd);
+
+	}
+
+	// std::cout << "Printing total_hivpos_age_sex_risk_vl_art mat: " << std::endl;
+	// for(int ii = 0; ii < nAge; ii++) {
+	// 	for(int jj = 0; jj < nMale; jj++) {
+	// 		for(int kk = 0; kk < nRisk; kk++) {
+	// 			for (int ll = 0; ll < nVl; ll ++) {
+	// 				for (int mm = 0; mm < nArt; mm ++) {
+
+	// 					if(total_hivpos_age_sex_risk_vl_art[ii][jj][kk][ll][mm] > 1e-5) {
+
+	// 						std::cout << "ii: " << ii << std::endl;
+	// 						std::cout << "jj: " << jj << std::endl;
+	// 						std::cout << "kk: " << kk << std::endl;
+	// 						std::cout << "ll: " << ll << std::endl;
+	// 						std::cout << "mm: " << mm << std::endl;
+	// 						std::cout << "Total HIV+: " << total_hivpos_age_sex_risk_vl_art[ii][jj][kk][ll][mm] << std::endl;
+
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
+
+	// std::cout << "Printing total_age_sex_risk mat: " << std::endl;
+	// for(int ii = 0; ii < nAge; ii++) {
+	// 	for(int jj = 0; jj < nMale; jj++) {
+	// 		for(int kk = 0; kk < nRisk; kk++) {
+
+	// 			std::cout << "ii: " << ii << std::endl;
+	// 			std::cout << "jj: " << jj << std::endl;
+	// 			std::cout << "kk: " << kk << std::endl;
+	// 			std::cout << "Total : " << total_age_sex_risk[ii][jj][kk] << std::endl;
+
+	// 		}
+	// 	}
+	// }
+
+
+
+	// Lambda mixing matrix: mixing matrix expanded by ART and viral load status of partner
+	double lambdaMixMat[nAge][nMale][nRisk][nAge][nMale][nRisk][nVl][nArt] = {0};
+
+	// Per-partnership per year transmission risk: weighted average of transmission risk based on counts of HIV+ in each viral load category in each partnership divided by total population (HIV+ and HIV-) in each age/sex/risk category
+	double ppRiskMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
+	double pp_risk, total_risk, adj_parts; // For use in the loop
+
+	for(int ii = 0; ii < nAge; ii++) {
+		for(int jj = 0; jj < nMale; jj++) {
+			for(int kk = 0; kk < nRisk; kk++) {
+				for(int ii_p = 0; ii_p < nAge; ii_p++) {
+					for(int jj_p = 0; jj_p < nMale; jj_p++) {
+						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+
+							double pp_sum = 0; // Sum of per-partnership risks over ART/VL status of partner
+
+							for(int ll_p = 0; ll_p < nVl; ll_p++) { // Looping over viral load status of partner
+								for(int mm_p = 0; mm_p < nArt; mm_p++) { // Looping over ART status of partner
+
+									if(jj != jj_p) {
+
+						   				// Add per-partnership risk for this specific ART/VL category to running sum
+						   				pp_sum += total_hivpos_age_sex_risk_vl_art[ii_p][jj_p][kk_p][ll_p][mm_p] * betas[jj][kk][ll_p][mm_p];
+
+									}
+								}
+							}
+
+							if(jj != jj_p) { // Only heterosexual parternships (this probably isn't necessary)
+
+								// Calculated average per-partnership transmission risk for this partnership category weighted by VL and ART prevalence
+								pp_risk = pp_sum / total_age_sex_risk[ii_p][jj_p][kk_p];
+	
+								// Calculate the number of adjusted partnerships for this partnership category
+								adj_parts = mixMat[ii][jj][kk][ii_p][jj_p][kk_p] * adjustedPartnersMat[ii][jj][kk][ii_p][jj_p][kk_p];
+								
+								// Calculate total risk for this partnership category, which combines the per-partnership transmission risk with the number of partnerships 
+								total_risk = 1 - std::pow((1 - pp_risk), adj_parts);
+	
+								// Store in ppRiskMat
+								ppRiskMat[ii][jj][kk][ii_p][jj_p][kk_p] = total_risk;
+
+								// if(pp_sum > 0) {
+									
+								// 	std::cout << "ii: " << ii << std::endl;
+								// 	std::cout << "jj: " << jj << std::endl;
+								// 	std::cout << "kk: " << kk << std::endl;
+								// 	std::cout << "ii_p: " << ii_p << std::endl;
+								// 	std::cout << "jj_p: " << jj_p << std::endl;
+								// 	std::cout << "kk_p: " << kk_p << std::endl;
+								// 	std::cout << "pp_sum: " << pp_sum << std::endl;
+								// 	std::cout << "pp_risk: " << pp_risk << std::endl;
+								// 	std::cout << "adj_parts: " << adj_parts << std::endl;
+								// 	std::cout << "total_risk: " << total_risk << std::endl;
+
+								// }
+
+
+							}
+
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+	// Calculate the risk over all partnerships and store in lambda mat.
+	for(int ii = 0; ii < nAge; ii++) {
+		for(int jj = 0; jj < nMale; jj++) {
+			for(int kk = 0; kk < nRisk; kk++) {
+
+				double prod = 1;
+
+				// lambda = 1 - prod(1 - total_risk), by age, male, and risk
+				for(int ii_p = 0; ii_p < nAge; ii_p++) {
+					for(int jj_p = 0; jj_p < nMale; jj_p++) {
+						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+
+							prod *= (1 - ppRiskMat[ii][jj][kk][ii_p][jj_p][kk_p]);
+
+						}
+					}
+				}
+
+
+				lambdaMat[ii][jj][kk] = 1 - prod;
+			}
+		}
+	}
+
+	// Save lambdaMat for comparison to R output
+	std::ofstream lambdaMatOut ("lambda_mat.cout");
+	if(lambdaMatOut.is_open()){
+
+		for(int ii = 0; ii < nAge; ii++) {
+			for(int jj = 0; jj < nMale; jj++) {
+				for(int kk = 0; kk < nRisk; kk++) {
+
+					lambdaMatOut << (ii+1) << "," << jj << "," << (kk+1) << ","; 
+					lambdaMatOut << std::fixed << std::setprecision(15) << lambdaMat[ii][jj][kk] << "\n";
+				
+				}
+			}
+		}
+
+	}
+
+
+
+
+
+
+}
 
 
 
@@ -600,12 +824,18 @@ int main(){
     calcMixMat(pop, 409);
     tEnd = clock();
     std::cout << "calcMixMat time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+    
     tStart = clock();
-    adjustPartnerships(pop);
+    adjustPartnerships();
     tEnd = clock();
     std::cout << "adjustPartnerships time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
-    // calcRisk(pop, 409);
+    tStart = clock();
+    calcLambda(pop);
+    tEnd = clock();
+    std::cout << "calcLambda time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+
+    // transmit(pop, 409);
     
    	
     // writeCSV(pop, "calcRisk.cout");
