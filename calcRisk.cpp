@@ -75,8 +75,8 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 
 
 	// Define epsilons. If I want different epsilons for age and risk I'll need to change this (and think carefully about whether code is still correct)
-	int epsilon_age = epsilons(time_index, 0);
-	int epsilon_risk = epsilons(time_index, 0);
+	double epsilon_age = epsilons(time_index, 0);
+	double epsilon_risk = epsilons(time_index, 0);
 
 	// Define mixing matrices for completely assortative mixing
 
@@ -153,8 +153,6 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 
 	std::cout << "Checking age/sex assortativity matrix" << std::endl;
 
-	std::cout << "delta age: " << delta_age << std::endl;
-
 	for(int ii = 0; ii < nAge; ii++) {
 		for(int jj = 0; jj < nMale; jj++) {
 			double counter = 0;
@@ -180,200 +178,156 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 		}
 	}
 
-	// // Calculate mixing matrix for completely random mixing
+	// Calculate mixing matrix for completely random mixing
 
-	// // Populate partners array
-	// // Turn this into an array: 
-	// double partners[nAge][nMale][nRisk] = {0};
+	// Populate partners array
+	double partners[nAge][nMale][nRisk] = {0};
 
-	// for(int ii = 0; ii < partners_rows; ii++) {
+	for(int ii = 0; ii < partners_rows; ii++) {
 	
-	// 	int iage = partners_mat(ii, 0) - 1;
-	// 	int imale = partners_mat(ii, 1);
-	// 	int irisk =  partners_mat(ii, 2) - 1;
+		int iage = partners_mat(ii, 0) - 1;
+		int imale = partners_mat(ii, 1);
+		int irisk =  partners_mat(ii, 2) - 1;
 	
-	// 	partners[iage][imale][irisk] = partners_mat(ii, partners_ind) * time_step;
+		partners[iage][imale][irisk] = partners_mat(ii, partners_ind) * time_step;
+	}
+
+	// Totals
+	double total_partners_sex[nMale] = {0};
+	double total_partners_sex_age[nAge][nMale] = {0};
+	double total_partners_sex_age_risk[nAge][nMale][nRisk] = {0};
+
+
+	int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart;
+
+	for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
+
+		double sum = 0; 
+
+        iage = pop(rowInd,ageInd) - 1; // 1 indexed fucker
+        imale = pop(rowInd,maleInd);
+        irisk = pop(rowInd,riskInd) - 1; // 1 indexed fucker
+
+        sum = (pop(rowInd, countInd) * partners[iage][imale][irisk]);
+
+        total_partners_sex[imale] += sum;
+        total_partners_sex_age[iage][imale] += sum;
+		total_partners_sex_age_risk[iage][imale][irisk] += sum;
+
+	}
+
+	// for(int ii = 0; ii < nMale; ii++) {
+	// 	std::cout << "Total partners by sex: " << std::endl;
+	// 	std::cout << "male: " << ii << "; " << total_partners_sex[ii] << std::endl;
 	// }
-
-	// // Total number of partnerships, by sex: 1x2
-	// // double total_partners_sex[nMale] = {0};
-
-	// // for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
-
-	// // 	double sum = 0; 
-
- // //        iage = pop(rowInd,ageInd) - 1; // 1 indexed fucker
- // //        imale = pop(rowInd,maleInd);
- // //        irisk = pop(rowInd,riskInd) - 1; // 1 indexed fucker
-
- // //        sum = (pop(rowInd, countInd) * partners[iage][imale][irisk]);
-	// // 	total_partners_sex[imale] += sum;
-
-	// // }
-
-	// // std::cout << "total female partners: " << total_partners_sex[0] << std::endl;
-	// // std::cout << "total male partners: " << total_partners_sex[1] << std::endl;
-
-
-	// // Totals
-	// double total_partners_sex[nMale] = {0};
-	// double total_partners_sex_age[nAge][nMale] = {0};
-	// double total_partners_sex_age_risk[nAge][nMale][nRisk] = {0};
-
-
-	// int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart;
-	// for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
-
-	// 	double sum = 0; 
-
- //        iage = pop(rowInd,ageInd) - 1; // 1 indexed fucker
- //        imale = pop(rowInd,maleInd);
- //        irisk = pop(rowInd,riskInd) - 1; // 1 indexed fucker
-
- //        sum = (pop(rowInd, countInd) * partners[iage][imale][irisk]);
-
- //        total_partners_sex[imale] += sum;
- //        total_partners_sex_age[iage][imale] += sum;
-	// 	total_partners_sex_age_risk[iage][imale][irisk] += sum;
-
-	// }
-
-	// // for(int ii = 0; ii < nMale; ii++) {
-	// // 	std::cout << "Total partners by sex: " << std::endl;
-	// // 	std::cout << "male: " << ii << "; " << total_partners_sex[ii] << std::endl;
-	// // }
-
-	// // for(int ii = 0; ii < nAge; ii++) {
-	// // 	for(int jj = 0; jj < nMale; jj++) {
-	// // 		std::cout << "Total partners by age and sex: " << std::endl;
-	// // 		std::cout << "age: " << ii << "; " << "male: " << jj << "; " << total_partners_sex_age[ii][jj] << std::endl;
-	// // 	}
-	// // }
-
-	// // for(int ii = 0; ii < nAge; ii++) {
-	// // 	for(int jj = 0; jj < nMale; jj++) {
-	// // 		for(int kk = 0; kk < nRisk; kk++) {
-	// // 		std::cout << "Total partners by age and sex and risk: " << std::endl;
-	// // 		std::cout << "age: " << ii << "; " << "male: " << jj << "; " << "risk: " << kk << "; " <<  total_partners_sex_age_risk[ii][jj][kk] << std::endl;
-	// // 		}
-	// // 	}
-	// // }
-
-
-
-	// // Proportions
-	// // Proportion of partners, by each for each sex (12x2)
-	// double prop_age_by_sex[nAge][nMale] = {0};
 
 	// for(int ii = 0; ii < nAge; ii++) {
 	// 	for(int jj = 0; jj < nMale; jj++) {
-
-	// 		prop_age_by_sex[ii][jj] = total_partners_sex_age[ii][jj]/total_partners_sex[jj];
-
+	// 		std::cout << "Total partners by age and sex: " << std::endl;
+	// 		std::cout << "age: " << ii << "; " << "male: " << jj << "; " << total_partners_sex_age[ii][jj] << std::endl;
 	// 	}
 	// }
 
-	// // for(int ii = 0; ii < nAge; ii++) {
-	// // 	for(int jj = 0; jj < nMale; jj++) {
-	// // 		std::cout << "Proportion partners by age for each sex: " << std::endl;
-	// // 		std::cout << "age: " << ii << "; " << "male: " << jj << "; " << prop_age_by_sex[ii][jj] << std::endl;
-	// // 	}
-	// // }
-
-
-	// // Proportion of partners by risk for each age/sex combination (12x2x3)
-	// double prop_risk_by_age_sex[nAge][nMale][nRisk] = {0};
 	// for(int ii = 0; ii < nAge; ii++) {
 	// 	for(int jj = 0; jj < nMale; jj++) {
 	// 		for(int kk = 0; kk < nRisk; kk++) {
-
-	// 			prop_risk_by_age_sex[ii][jj][kk] = total_partners_sex_age_risk[ii][jj][kk]/total_partners_sex_age[ii][jj];
-
-	// 		}
-	// 	}
-	// }
-
-	// // Random mixing
-	// for(int ii = 0; ii < nAge; ii++) {
-	// 	for(int jj = 0; jj < nMale; jj++) {
-	// 		for(int kk = 0; kk < nRisk; kk++) {
-	// 			for(int ii_p = 0; ii_p < nAge; ii_p++) {
-	// 				for(int jj_p = 0; jj_p < nMale; jj_p++) {
-	// 					for(int kk_p = 0; kk_p < nRisk; kk_p++) {
-
-	// 						if(jj != jj_p) { // Only heterosexual mixing
-	// 							randomMat[ii][jj][kk][ii_p][jj_p][kk_p] = prop_age_by_sex[ii_p][jj_p] * prop_risk_by_age_sex[ii_p][jj_p][kk_p];
-	// 						}
-
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
-
-	// // CHECK IF THIS PRINTS CORRECTLY/SUMS TO 1 (it won't once we multiply by epsilons at the end of the loop above).
-	// for(int ii = 0; ii < nAge; ii++) {
-	// 	for(int jj = 0; jj < nMale; jj++) {
-	// 		for(int kk = 0; kk < nRisk; kk++) {
-	// 			double counter = 0;
-	// 			for(int ii_p = 0; ii_p < nAge; ii_p++) {
-	// 				for(int jj_p = 0; jj_p < nMale; jj_p++) {
-	// 					for(int kk_p = 0; kk_p < nRisk; kk_p++) {
-	// 						counter += randomMat[ii][jj][kk][ii_p][jj_p][kk_p];
-	// 					}
-	// 				}
-	// 			}
-	// 			if(abs(counter - 1) > 1e-5) {
-	// 				std::cout << "ii: " << ii << std::endl;
-	// 				std::cout << "jj: " << jj << std::endl;
-	// 				std::cout << "kk: " << kk << std::endl;
-	// 				std::cout << "counter: " << counter << std::endl;
-	// 			}
+	// 		std::cout << "Total partners by age and sex and risk: " << std::endl;
+	// 		std::cout << "age: " << ii << "; " << "male: " << jj << "; " << "risk: " << kk << "; " <<  total_partners_sex_age_risk[ii][jj][kk] << std::endl;
 	// 		}
 	// 	}
 	// }
 
 
-	// // Calculate final mixing matrix - weighted average of random and assortative
+
+	// Proportions
+	// Proportion of partners, by each for each sex (12x2)
+	double prop_age_by_sex[nAge][nMale] = {0};
+
+	for(int ii = 0; ii < nAge; ii++) {
+		for(int jj = 0; jj < nMale; jj++) {
+
+			prop_age_by_sex[ii][jj] = total_partners_sex_age[ii][jj]/total_partners_sex[jj];
+
+		}
+	}
+
 	// for(int ii = 0; ii < nAge; ii++) {
 	// 	for(int jj = 0; jj < nMale; jj++) {
-	// 		for(int kk = 0; kk < nRisk; kk++) {
-	// 			for(int ii_p = 0; ii_p < nAge; ii_p++) {
-	// 				for(int jj_p = 0; jj_p < nMale; jj_p++) {
-	// 					for(int kk_p = 0; kk_p < nRisk; kk_p++) {
-							
-	// 						mixMat[ii][jj][kk][ii_p][jj_p][kk_p] = randomMat[ii][jj][kk][ii_p][jj_p][kk_p] * epsilon_risk * epsilon_age + assortMat[ii][jj][kk][ii_p][jj_p][kk_p] * (1-epsilon_risk) * (1-epsilon_age);
-	// 					}
-	// 				}
-	// 			}
-	// 		}
+	// 		std::cout << "Proportion partners by age for each sex: " << std::endl;
+	// 		std::cout << "age: " << ii << "; " << "male: " << jj << "; " << prop_age_by_sex[ii][jj] << std::endl;
 	// 	}
 	// }
 
-	// // Verify that final mixing matrix sums to 1
-	// for(int ii = 0; ii < nAge; ii++) {
-	// 	for(int jj = 0; jj < nMale; jj++) {
-	// 		for(int kk = 0; kk < nRisk; kk++) {
-	// 			double counter = 0;
-	// 			for(int ii_p = 0; ii_p < nAge; ii_p++) {
-	// 				for(int jj_p = 0; jj_p < nMale; jj_p++) {
-	// 					for(int kk_p = 0; kk_p < nRisk; kk_p++) {
-	// 						counter += mixMat[ii][jj][kk][ii_p][jj_p][kk_p];
-	// 					}
-	// 				}
-	// 			}
-	// 			if(abs(counter - 1) > 1e-5) {
-	// 				std::cout << "ii: " << ii << std::endl;
-	// 				std::cout << "jj: " << jj << std::endl;
-	// 				std::cout << "kk: " << kk << std::endl;
-	// 				std::cout << "counter: " << counter << std::endl;
-	// 			}
-	// 		}
-	// 	}
-	// }
+
+	// Proportion of partners by risk for each age/sex combination (12x2x3)
+	double prop_risk_by_age_sex[nAge][nMale][nRisk] = {0};
+	for(int ii = 0; ii < nAge; ii++) {
+		for(int jj = 0; jj < nMale; jj++) {
+			for(int kk = 0; kk < nRisk; kk++) {
+
+				prop_risk_by_age_sex[ii][jj][kk] = total_partners_sex_age_risk[ii][jj][kk]/total_partners_sex_age[ii][jj];
+
+			}
+		}
+	}
+
+
+	// Calculate mixing matrix: weighted average of random mixing and assortative mixing
+
+	// pa = prop_age * epsilon + delta_age * (1-epsilon)
+
+	// pr_a = prop_risk_by_age * epsilon + delta_risk * (1-epsilon)
+
+	// prop = pa * pr_a
+	double pr_age; 
+	double pr_risk_given_age; 
+
+	for(int ii = 0; ii < nAge; ii++) {
+		for(int jj = 0; jj < nMale; jj++) {
+			for(int kk = 0; kk < nRisk; kk++) {
+				for(int ii_p = 0; ii_p < nAge; ii_p++) {
+					for(int jj_p = 0; jj_p < nMale; jj_p++) {
+						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+
+							pr_age = prop_age_by_sex[ii_p][jj_p] * epsilon_age + assortMatAgeSex[ii][jj][ii_p][jj_p] * (1 - epsilon_age);
+							pr_risk_given_age = prop_risk_by_age_sex[ii_p][jj_p][kk_p] * epsilon_risk + assortMatRisk[kk][kk_p] * (1 - epsilon_risk);
+							mixMat[ii][jj][kk][ii_p][jj_p][kk_p] = pr_age * pr_risk_given_age;
+
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// CHECK IF THIS PRINTS CORRECTLY/SUMS TO 1 (it won't once we multiply by epsilons at the end of the loop above).
+	std::cout << "Checking final mixing matrix: " << std::endl;
+	for(int ii = 0; ii < nAge; ii++) {
+		for(int jj = 0; jj < nMale; jj++) {
+			for(int kk = 0; kk < nRisk; kk++) {
+				double counter = 0;
+				for(int ii_p = 0; ii_p < nAge; ii_p++) {
+					for(int jj_p = 0; jj_p < nMale; jj_p++) {
+						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+							counter += mixMat[ii][jj][kk][ii_p][jj_p][kk_p];
+						}
+					}
+				}
+				if(abs(counter - 1) > 1e-5) {
+					std::cout << "ii: " << ii << std::endl;
+					std::cout << "jj: " << jj << std::endl;
+					std::cout << "kk: " << kk << std::endl;
+					std::cout << "counter: " << counter << std::endl;
+				}
+			}
+		}
+	}
 
 }
+
+// void adjustPartnerships() { what are the inputs needed here?
+	
+// }
 
 // void calcRisk() { // what are the inputs needed here?
 
