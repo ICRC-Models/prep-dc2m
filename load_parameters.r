@@ -176,3 +176,5 @@ fwrite(betas, col.names = FALSE, file = "betas.csv")
 
 ## Risk reduction for HIV-negative partner based on intervention usage
 risk_reduction <- fread("data/risk_reduction.csv")
+fwrite(risk_reduction, col.names = FALSE, file = "risk_reduction_mat.csv")
+

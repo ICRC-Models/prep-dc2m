@@ -89,6 +89,15 @@ int transmissionRiskInd = 6; // Column of betas_mat containing transmission risk
 // Lambda matrix: final transmission risk, by age, sex, and risk. Not a mixing matrix (does not contain indices of partners). Calculated from lambda mixing matrix
 double lambdaMat[nAge][nMale][nRisk] = {0};
 
+// Risk reduction for interventions - move  these out
+// int rr_cols = 2;
+// int rr_rows = 3;
+// Eigen::MatrixXd rr_mat = readCSV("rr_mat.csv", rr_cols, rr_rows);
+// int psiInd = 1; // Column indicator for risk reduction (psi) of intervention
+double psiCirc = 0.60;
+double psiPrEP = 0.92;
+double psiCondom = 0.78;
+
 
 void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 	 const int nPopRows = pop.rows();
@@ -696,11 +705,6 @@ void calcLambda(Eigen::MatrixXd &pop) {
 	// 	}
 	// }
 
-
-
-	// Lambda mixing matrix: mixing matrix expanded by ART and viral load status of partner
-	double lambdaMixMat[nAge][nMale][nRisk][nAge][nMale][nRisk][nVl][nArt] = {0};
-
 	// Per-partnership per year transmission risk: weighted average of transmission risk based on counts of HIV+ in each viral load category in each partnership divided by total population (HIV+ and HIV-) in each age/sex/risk category
 	double ppRiskMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
 	double pp_risk, total_risk, adj_parts; // For use in the loop
@@ -807,9 +811,140 @@ void calcLambda(Eigen::MatrixXd &pop) {
 
 	}
 
+}
+
+void transmit(Eigen::MatrixXd &pop) { 
+
+	const int nPopRows = pop.rows(); // Any way to move this out?
+
+	// Check to see if lambda mat is correctly loaded here:
+	std::cout << "Checking input lambda matrix: " << std::endl;
+	for(int ii = 0; ii < nAge; ii++) {
+		for(int jj = 0; jj < nMale; jj++) {
+			for(int kk = 0; kk < nRisk; kk++) {
+
+				if(lambdaMat[ii][jj][kk] < 1e-11) {
+
+					std::cout << "ii: " << ii << std::endl;
+					std::cout << "jj: " << jj << std::endl;
+					std::cout << "kk: " << kk << std::endl;
+					std::cout << "lambda: " << lambdaMat[ii][jj][kk] << std::endl;
+
+				}
+			}
+		}
+	}
+
+
+	// Create risk reduction array this would be easier to do outside the function
+	double rr[nMale][nCirc][nPrep][nCondom] = {1.0};
+	
+	for(int ii = 0; ii < nCirc; ii++) {
+		for(int jj = 0; jj < nCirc; jj++) {
+			for(int kk = 0; kk < nPrep; kk++) {
+				for(int ll = 0; ll < nCondom; ll++) {
+	
+					double psi = 1.0;
+	
+					if(ii == 1 && jj == 1) { // Risk reduction from circumcision - only for males
+	
+						psi *= (1.0 - psiCirc);
+					}
+	
+					if(kk == 1) { // Risk reduction from PrEP
+	
+						psi *= (1.0 - psiPrEP);
+					}
+	
+					if(ll == 1) { // Risk reduction from condom usage
+	
+						psi *= (1.0 - psiCondom);
+					}
+
+					rr[ii][jj][kk][ll] = psi;
+
+					// if(psi < 1e-5) {
+					// 	std::cout << "HERE" << std::endl;
+					// }
+
+					// std::cout << "psi: " << psi << std::endl;
+	
+				}
+			}
+		}
+	}
+
+	// Loop through pop
+	// For use inside the loop
+	int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart;
+	for (int rowInd = 0; rowInd < nPopRows; rowInd ++){
+
+	    ihiv = pop(rowInd, hivInd);
+	    iage = pop(rowInd, ageInd) - 1; // 1 indexed fucker
+	    imale = pop(rowInd, maleInd);
+	    irisk = pop(rowInd, riskInd) - 1; // 1 indexed fucker
+	    icd4 = pop(rowInd, cd4Ind);
+	    ivl = pop(rowInd, vlInd);
+	    icirc = pop(rowInd, circInd);
+	    iprep = pop(rowInd, prepInd);
+	    icondom = pop(rowInd, condomInd);
+	    iart = pop(rowInd, artInd);
+
+	    // std::cout << "ihiv: " << ihiv << std::endl;
+	    // std::cout << "iage: " << iage << std::endl;
+	    // std::cout << "imale: " << imale << std::endl;
+	    // std::cout << "irisk: " << irisk << std::endl;
+	    // std::cout << "icd4: " << icd4 << std::endl;
 
 
 
+	    int rowInd_hivpos;
+	    double lambda;
+	    double psi = 1.0;
+
+		if(ihiv == 0) {
+
+
+			// Find lambda
+			lambda = lambdaMat[iage][imale][irisk];
+
+			if(lambda < 1e-11) {
+
+				std::cout << "lambda: " << lambda << std::endl;
+
+			}
+			
+
+			// Find psi
+			psi = rr[imale][icirc][iprep][icondom];
+
+			if(psi < 1e-5) {
+
+				std::cout << "psi: " << psi << std::endl;
+
+			}
+			
+
+
+			// Efflux from HIV-negative population
+			pop(rowInd, diffInd) -= (pop(rowInd, countInd) * lambda * psi);
+
+			// Influx to HIV-positive population
+			// Find corresponding rowIndex for HIV+ compartment
+			rowInd_hivpos = rowInd + nAge * nMale * nRisk * nCD4 * nVl * nCirc * nCondom * nPrep * nArt;
+
+			// Infections are seeded in vl = 1 and cd4 = 1 (zero-indexed). So need to find that row. This would be way easier in an array...
+			int cd4_leap = nVl * nCirc * nCondom * nPrep * nArt; // Leap for each CD4 count category
+			int vl_leap = nCirc * nCondom * nPrep * nArt; // Leap for each VL category
+
+			rowInd_hivpos -= (icd4 - 1) * cd4_leap; // Adjust CD4
+			rowInd_hivpos -= (ivl - 1) * vl_leap; // Adjust VL
+
+			pop(rowInd_hivpos, diffInd) += (pop(rowInd, countInd) * lambda * psi);
+
+
+		}   
+	}
 
 
 }
@@ -835,8 +970,9 @@ int main(){
     tEnd = clock();
     std::cout << "calcLambda time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
-    // transmit(pop, 409);
-    
-   	
-    // writeCSV(pop, "calcRisk.cout");
+    tStart = clock();
+    transmit(pop);
+    tEnd = clock();
+    std::cout << "transmit time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+   	writeCSV(pop, "transmit.cout");
 }
