@@ -11,10 +11,14 @@ void addBirths(Eigen::MatrixXd &pop, int time_index);
 void subtractDeaths(Eigen::MatrixXd &pop, int time_index);
 void agePop(Eigen::MatrixXd &pop);
 void progressDisease(Eigen::MatrixXd &pop);
+void calcMixMat(Eigen::matrixXd &pop, int time_index)
+void adjustPartnerships();
+void calcLambda(Eigen::matrixXd &pop);
+void transmit(Eigen::matrixXd &pop, int time_index);
 
 int main(){
 
-    int timeStep = 409; //0 based
+    int timeIndex = 409; //0 based
     int pop_cols = 13;
     int pop_rows = 82944;
     Eigen::MatrixXd pop;
@@ -25,7 +29,7 @@ int main(){
     // distributeART
     pop = readCSV("incrt.out", pop_cols, pop_rows);
     tStart = clock();
-    distributeART(pop, timeStep); //0 based
+    distributeART(pop, timeIndex); //0 based
     tEnd = clock();
     std::cout << "distributeART time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
     writeCSV(pop, "distributeART.cout");
@@ -33,7 +37,7 @@ int main(){
     // distributeCondoms
     pop = readCSV("distributeART.out", pop_cols, pop_rows);
     tStart = clock();
-    distributeCondoms(pop, timeStep); //0 based
+    distributeCondoms(pop, timeIndex); //0 based
     tEnd = clock();
     std::cout << "distributeCondoms time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
     writeCSV(pop, "distributeCondoms.cout");
@@ -41,7 +45,7 @@ int main(){
     // addBirths
     pop = readCSV("distributeCondoms.out", pop_cols, pop_rows);
     tStart = clock();
-    addBirths(pop, timeStep); //0 based
+    addBirths(pop, timeIndex); //0 based
     tEnd = clock();
     std::cout << "addBirths time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
     writeCSV(pop, "addBirths.cout");
@@ -49,7 +53,7 @@ int main(){
     //subtractDeaths
     pop = readCSV("addBirths.out", pop_cols, pop_rows);
     tStart = clock();
-    subtractDeaths(pop, timeStep); //0 based
+    subtractDeaths(pop, timeIndex); //0 based
     tEnd = clock();
     std::cout << "subtractDeaths time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
     writeCSV(pop, "subtractDeaths.cout");
@@ -69,6 +73,29 @@ int main(){
     tEnd = clock();
     std::cout << "progressDisease time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
     writeCSV(pop, "progressDisease.cout");
+
+    //Transmit
+    pop = readCSV("progressDisease.out", pop_cols, pop_rows);
+    tStart = clock();
+    calcMixMat(pop, timeIndex);
+    tEnd = clock();
+    std::cout << "calcMixMat took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+
+    tStart = clock();
+    adjustPartnerships();
+    tEnd = clock();
+    std::cout << "adjustPartnerships took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+
+    tStart = clock();
+    calcLambda(pop);
+    tEnd = clock();
+    std::cout << "calcLambda took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+
+    tStart = clock();
+    transmit(pop, timeIndex);
+    tEnd = clock();
+    std::cout << "transmit took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+    writeCSV(pop, "transmit.cout");
 
 
 }

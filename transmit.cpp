@@ -12,8 +12,8 @@
 Eigen::MatrixXd readCSV(std::string filename, int cols, int rows);
 void writeCSV(Eigen::MatrixXd matrix, std::string filename);
 
-int pop_cols = 13;
-int pop_rows = 82944;
+// int pop_cols = 13;
+// int pop_rows = 82944;
 
 const int hivInd = 0;
 const int ageInd = 1;
@@ -951,28 +951,28 @@ void transmit(Eigen::MatrixXd &pop) {
 
 
 
-int main(){
-    clock_t tStart;
-    clock_t tEnd;
-    Eigen::MatrixXd pop = readCSV("progressDisease.out", pop_cols, pop_rows);
-    tStart = clock();
-    calcMixMat(pop, 409);
-    tEnd = clock();
-    std::cout << "calcMixMat time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+// int main(){
+//     clock_t tStart;
+//     clock_t tEnd;
+//     Eigen::MatrixXd pop = readCSV("progressDisease.out", pop_cols, pop_rows);
+//     tStart = clock();
+//     calcMixMat(pop, 409);
+//     tEnd = clock();
+//     std::cout << "calcMixMat time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
     
-    tStart = clock();
-    adjustPartnerships();
-    tEnd = clock();
-    std::cout << "adjustPartnerships time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+//     tStart = clock();
+//     adjustPartnerships();
+//     tEnd = clock();
+//     std::cout << "adjustPartnerships time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
-    tStart = clock();
-    calcLambda(pop);
-    tEnd = clock();
-    std::cout << "calcLambda time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+//     tStart = clock();
+//     calcLambda(pop);
+//     tEnd = clock();
+//     std::cout << "calcLambda time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
-    tStart = clock();
-    transmit(pop);
-    tEnd = clock();
-    std::cout << "transmit time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
-   	writeCSV(pop, "transmit.cout");
-}
+//     tStart = clock();
+//     transmit(pop);
+//     tEnd = clock();
+//     std::cout << "transmit time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+//    	writeCSV(pop, "transmit.cout");
+// }
