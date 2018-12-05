@@ -14,7 +14,7 @@ void progressDisease(Eigen::MatrixXd &pop);
 void calcMixMat(Eigen::MatrixXd &pop, int time_index);
 void adjustPartnerships();
 void calcLambda(Eigen::MatrixXd &pop);
-void transmit(Eigen::MatrixXd &pop, int time_index);
+void transmit(Eigen::MatrixXd &pop);
 
 int main(){
 
@@ -92,7 +92,7 @@ int main(){
     std::cout << "calcLambda took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
     tStart = clock();
-    transmit(pop, timeIndex);
+    transmit(pop);
     tEnd = clock();
     std::cout << "transmit took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
     writeCSV(pop, "transmit.cout");
