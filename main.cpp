@@ -11,10 +11,10 @@ void addBirths(Eigen::MatrixXd &pop, int time_index);
 void subtractDeaths(Eigen::MatrixXd &pop, int time_index);
 void agePop(Eigen::MatrixXd &pop);
 void progressDisease(Eigen::MatrixXd &pop);
-void calcMixMat(Eigen::matrixXd &pop, int time_index)
+void calcMixMat(Eigen::MatrixXd &pop, int time_index);
 void adjustPartnerships();
-void calcLambda(Eigen::matrixXd &pop);
-void transmit(Eigen::matrixXd &pop, int time_index);
+void calcLambda(Eigen::MatrixXd &pop);
+void transmit(Eigen::MatrixXd &pop, int time_index);
 
 int main(){
 

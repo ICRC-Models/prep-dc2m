@@ -1,7 +1,7 @@
 CFLAGS = -O3 --std=c++11 -g
 CC = clang++
 
-popTest: distributeART.o distributeCondoms.o addBirths.o subtractDeaths.o agePop.o progressDisease.o transmit. o csvUtil.o
+popTest: distributeART.o distributeCondoms.o addBirths.o subtractDeaths.o agePop.o progressDisease.o transmit.o csvUtil.o
 	$(CC) $(CFLAGS) -o popTest main.cpp distributeART.o distributeCondoms.o addBirths.o subtractDeaths.o agePop.o progressDisease.o transmit.o csvUtil.o
 
 distributeART.o: distributeART.cpp
