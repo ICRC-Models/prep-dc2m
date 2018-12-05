@@ -98,7 +98,16 @@ class TestCSVs(unittest.TestCase):
             row += 1;
             # print(row)
             for val1, val2 in zip(row1.split(","), row2.split(",")):
-                self.assertAlmostEqual(float(val1), float(val2), places = 10, msg = "row %i"%row)                  
+                self.assertAlmostEqual(float(val1), float(val2), places = 10, msg = "row %i"%row)
+
+    def test_endPop(self):
+        lines1, lines2 = loadCSVs("endPop.out", "endPop.cout")
+        row = 0;
+        for row1, row2 in zip(lines1, lines2):
+            row += 1;
+            # print(row)
+            for val1, val2 in zip(row1.split(","), row2.split(",")):
+                self.assertAlmostEqual(float(val1), float(val2), places = 9, msg = "row %i"%row)                     
 
 
 if __name__ == '__main__':
