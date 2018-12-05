@@ -16,6 +16,7 @@ void adjustPartnerships();
 void calcLambda(Eigen::MatrixXd &pop);
 void transmit(Eigen::MatrixXd &pop);
 void endPop(Eigen::MatrixXd &pop);
+void riskAdjust(Eigen::MatrixXd &pop);
 
 int main(){
 
@@ -103,5 +104,11 @@ int main(){
     tEnd = clock();
     std::cout << "endPop took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
     writeCSV(pop, "endPop.cout");
+
+    tStart = clock();
+    riskAdjust(pop);
+    tEnd = clock();
+    std::cout << "riskAdjust took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+    writeCSV(pop, "riskAdjust.cout");
 
 }
