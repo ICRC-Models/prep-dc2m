@@ -119,9 +119,9 @@ void addBirths(Eigen::MatrixXd &pop, int time_index){
     for (int ii : maleInds0){ 
 
         count = pop(ii,countInd);
-        if (ii==0){
-            std::cout << "first line count " << count << std::endl;
-        }
+        // if (ii==0){
+        //     std::cout << "first line count " << count << std::endl;
+        // }
         // std:: cout << "count: " << count << std::endl;
         ihiv = pop(ii,hivInd);
         iage = pop(ii,ageInd) - 1; // 1 indexed fucker
@@ -150,8 +150,8 @@ void addBirths(Eigen::MatrixXd &pop, int time_index){
 
     }
 
-    std::cout << "births_from_neg: " << births_from_neg << std::endl;
-    std::cout << "births_from_pos: " << births_from_pos << std::endl;
+   //  std::cout << "births_from_neg: " << births_from_neg << std::endl;
+    // std::cout << "births_from_pos: " << births_from_pos << std::endl;
 
 // Calculate total infants born HIV+ and HIV-
   double neg_births;
@@ -160,8 +160,8 @@ void addBirths(Eigen::MatrixXd &pop, int time_index){
   neg_births = births_from_pos * (1 - vert_trans) + births_from_neg;
   pos_births = births_from_pos * vert_trans;
 
-  std::cout << "neg_births: " << neg_births << std::endl;
-  std::cout << "pos_births: " << pos_births << std::endl;
+  // std::cout << "neg_births: " << neg_births << std::endl;
+  // std::cout << "pos_births: " << pos_births << std::endl;
 
 
 // Distribute births into pop table

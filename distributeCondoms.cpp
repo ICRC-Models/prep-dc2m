@@ -84,9 +84,9 @@ void distributeCondoms(Eigen::MatrixXd &pop, int time_index){
         // auto pop_row = pop.row(ii);
         // std::cout << "row " << ii << " of " << nPopRows << std::endl;
         count = pop(ii,countInd);
-        if (ii==0){
-            std::cout << "first line count " << count << std::endl;
-        }
+       //  if (ii==0){
+        //     std::cout << "first line count " << count << std::endl;
+        // }
         // std:: cout << "count: " << count << std::endl;
         ihiv = pop(ii,hivInd);
         iage = pop(ii,ageInd) - 1; // 1 indexed fucker
@@ -130,11 +130,11 @@ void distributeCondoms(Eigen::MatrixXd &pop, int time_index){
         daSum = countSum[ihiv][iage][imale][irisk][icd4][ivl][icirc][iprep][iart];
         daProp = prop[iage][icondom];
 
-        if(rowInd == 0 | rowInd == 2) {
-            std::cout << "rowInd: " << rowInd << std::endl;
-            std::cout << "daSum: " << daSum << std::endl;
-            std::cout << "daProp: " << daProp << std::endl;
-        }
+        // if(rowInd == 0 | rowInd == 2) {
+        //     std::cout << "rowInd: " << rowInd << std::endl;
+        //     std::cout << "daSum: " << daSum << std::endl;
+        //     std::cout << "daProp: " << daProp << std::endl;
+        // }
 
         pop(rowInd,countInd) = daSum * daProp;
     }

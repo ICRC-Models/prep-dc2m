@@ -78,8 +78,8 @@ void distributeART(Eigen::MatrixXd &pop, int time_index){
 
     // find indices in pop where hiv =1;
 
-    auto randomPopRow = pop.row(102);
-    std::cout << "random pop " << randomPopRow << std::endl;
+   //  auto randomPopRow = pop.row(102);
+   //  std::cout << "random pop " << randomPopRow << std::endl;
 
     std::vector<int> hivInds1;
     for (int ii = 0; ii<nPopRows; ii++){
@@ -106,9 +106,9 @@ void distributeART(Eigen::MatrixXd &pop, int time_index){
         // auto pop_row = pop.row(ii);
         // std::cout << "row " << ii << " of " << nPopRows << std::endl;
         count = pop(ii,countInd);
-        if (ii==0){
-            std::cout << "first line count " << count << std::endl;
-        }
+        // if (ii==0){
+        //     std::cout << "first line count " << count << std::endl;
+        // }
         // std:: cout << "count: " << count << std::endl;
         ihiv = pop(ii,hivInd);
         iage = pop(ii,ageInd) - 1; // 1 indexed fucker
@@ -154,9 +154,9 @@ void distributeART(Eigen::MatrixXd &pop, int time_index){
 
         if(rowInd-1 == 55985 | rowInd-1 == 55986) {
 
-        	std::cout <<  "icd4: " << icd4 << std::endl;
-        	std::cout <<  "iart: " << iart << std::endl;
-        	std::cout << "daProp: " << daProp << std::endl;
+        	// std::cout <<  "icd4: " << icd4 << std::endl;
+        	// std::cout <<  "iart: " << iart << std::endl;
+        	// std::cout << "daProp: " << daProp << std::endl;
         }
 
 
