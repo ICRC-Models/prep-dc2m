@@ -21,11 +21,11 @@ transmit <- function(dt, lambdas) {
   dt[hiv == 0, diff := diff - count * lambda * psi]
 
   ## Keep track of incidence
-  new_infections <- dt[hiv == 0, list(time = tt, new_inf = sum(count * lambda * psi)), by = list(male, age)]
-  setkey(new_infections, male, age, time)
-  setkey(incidence, male, age, time)
-  incidence[new_infections, horiz_infections := new_inf]
-  
+  # new_infections <- dt[hiv == 0, list(time = tt, new_inf = sum(count * lambda * psi)), by = list(male, age)]
+  # setkey(new_infections, male, age, time)
+  # setkey(incidence, male, age, time)
+  # incidence[new_infections, horiz_infections := new_inf]
+  # 
   ## Add to HIV positive population
   new_hiv <- copy(dt)
   new_hiv <- new_hiv[hiv == 0]

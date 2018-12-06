@@ -18,10 +18,10 @@ addBirths <- function(dt, time_index = tt) {
   dt[fert, births := count * gamma]
 
   ## Keep track of birth statistics
-  birth_stats <- dt[male == 0, list(time = tt, num = sum(births)), by = list(hiv, age)]
-  setkey(birth_stats, time, hiv, age)
-  setkey(births, time, hiv, age)
-  births[birth_stats, num_births := num]
+  # birth_stats <- dt[male == 0, list(time = tt, num = sum(births)), by = list(hiv, age)]
+  # setkey(birth_stats, time, hiv, age)
+  # setkey(births, time, hiv, age)
+  # births[birth_stats, num_births := num]
 
   ## Calculate births from uninfected mothers. Count mothers on ART as "negatives"
   births_from_neg <- dt[hiv == 0 | art == 1, sum(births, na.rm = TRUE)]
@@ -55,12 +55,12 @@ addBirths <- function(dt, time_index = tt) {
   dt[, diff := diff + births]
 
   ## Keep track of new infections
-  hiv_births <- dt[hiv == 1 & age == 1, list(inf_births = sum(births), time = tt), by = list(age, male)]
-
-  setkey(hiv_births, time, age, male)
-  setkey(incidence, time, age, male)
-
-  incidence[hiv_births, vert_infections := inf_births]
+  # hiv_births <- dt[hiv == 1 & age == 1, list(inf_births = sum(births), time = tt), by = list(age, male)]
+  # 
+  # setkey(hiv_births, time, age, male)
+  # setkey(incidence, time, age, male)
+  # 
+  # incidence[hiv_births, vert_infections := inf_births]
 
   ## Clean up
   dt[, births := NULL]
@@ -82,10 +82,10 @@ subtractDeaths <- function(dt) {
   dt[, diff := diff - back_deaths - hiv_deaths]
 
   ## Keep track
-  death_stats <- dt[, list(aids_deaths = sum(hiv_deaths), non_aids_deaths = sum(back_deaths), time = tt), by = list(hiv, age, male)]
-  setkey(death_stats, time, hiv, age, male)
-  setkey(deaths, time, hiv, age, male)
-  deaths[death_stats, c("hiv_deaths", "back_deaths") := list(aids_deaths, non_aids_deaths)]
+  # death_stats <- dt[, list(aids_deaths = sum(hiv_deaths), non_aids_deaths = sum(back_deaths), time = tt), by = list(hiv, age, male)]
+  # setkey(death_stats, time, hiv, age, male)
+  # setkey(deaths, time, hiv, age, male)
+  # deaths[death_stats, c("hiv_deaths", "back_deaths") := list(aids_deaths, non_aids_deaths)]
 
   ## Clean up
   dt[, c("back_deaths", "hiv_deaths") := NULL]

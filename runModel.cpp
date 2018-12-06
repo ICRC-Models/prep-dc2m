@@ -31,17 +31,27 @@ int main() {
     clock_t tStart;
     clock_t tEnd;
 
-    pop = readCSV("incrt.out", pop_cols, pop_rows);
-
-    // Save initial pop
-    writeCSV(pop, "pop_initial.cout");
+    pop = readCSV("pop_initial.out", pop_cols, pop_rows);
 
     std::cout << "Starting Loop..." << std::endl;
 
+    char buffer[50];
+
 	tStart = clock();
-	
+
+	// Save final pop
+	int nPopRows = pop.rows();
+	int timeInd = 12;
+
 	// Loop over time steps
 	for(int timeIndex = 0; timeIndex < nSteps; timeIndex++) {
+
+
+		for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
+	
+			pop(rowInd, timeInd) = timeIndex;
+	
+		}
 
 		distributeART(pop, timeIndex);
 
@@ -67,6 +77,10 @@ int main() {
 
 		riskAdjust(pop);
 
+
+		sprintf(buffer, "pop_%i.cout", timeIndex);
+		writeCSV(pop, buffer);
+
 		
 	}
 
@@ -75,7 +89,8 @@ int main() {
 	std::cout << "Loop Finished." << std::endl;
 	std::cout << nSteps << " steps took " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
-	// Save final pop
+
+
 	writeCSV(pop, "pop_final.cout");
 
 

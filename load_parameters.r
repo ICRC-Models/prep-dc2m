@@ -27,6 +27,7 @@ art_cov <- lapply(sort(unique(art_coverage$cd4)), function(cd4_ind) {
 # each row corresponds to cd4 1:5
 
 fwrite(art_cov, file="art_cov.csv")
+## art_cov <- fread(file="art_cov.csv")
 
 rm(art_coverage)
 
