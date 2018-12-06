@@ -168,44 +168,44 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 	}
 
 	// Check if these assortativity matrices all sum to 1:
-	std::cout << "Checking risk assortativity matrix" << std::endl;
-	for(int kk = 0; kk < nRisk; kk++) {
-		double counter = 0;
-		for(int kk_p = 0; kk_p < nRisk; kk_p++) {
-			counter += assortMatRisk[kk][kk_p];
-		}
-		if(abs(counter - 1) > 1e-5) {
-			std::cout << "kk: " << kk << std::endl;
-			std::cout << "counter: " << counter << std::endl;
-		}
-	}
+	// std::cout << "Checking risk assortativity matrix" << std::endl;
+	// for(int kk = 0; kk < nRisk; kk++) {
+	// 	double counter = 0;
+	// 	for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+	// 		counter += assortMatRisk[kk][kk_p];
+	// 	}
+	// 	if(abs(counter - 1) > 1e-5) {
+	// 		std::cout << "kk: " << kk << std::endl;
+	// 		std::cout << "counter: " << counter << std::endl;
+	// 	}
+	// }
 
-	std::cout << "Checking age/sex assortativity matrix" << std::endl;
+	// std::cout << "Checking age/sex assortativity matrix" << std::endl;
 
-	for(int ii = 0; ii < nAge; ii++) {
-		for(int jj = 0; jj < nMale; jj++) {
-			double counter = 0;
-			for(int ii_p = 0; ii_p < nAge; ii_p++) {
-				for(int jj_p = 0; jj_p < nMale; jj_p++) {
+	// for(int ii = 0; ii < nAge; ii++) {
+	// 	for(int jj = 0; jj < nMale; jj++) {
+	// 		double counter = 0;
+	// 		for(int ii_p = 0; ii_p < nAge; ii_p++) {
+	// 			for(int jj_p = 0; jj_p < nMale; jj_p++) {
 
-					counter += assortMatAgeSex[ii][jj][ii_p][jj_p];
+	// 				counter += assortMatAgeSex[ii][jj][ii_p][jj_p];
 
-					// if(ii == 0 && jj == 0) {
-					// 	std::cout << "ii == 0 && jj == 0" << std::endl;
-					// 	std::cout << "ii_p: " << ii_p << std::endl;
-					// 	std::cout << "jj_p: " << jj_p << std::endl;
-					// 	std::cout << "prop: " << assortMatAgeSex[ii][jj][ii_p][jj_p] << std::endl;
-					// }
+	// 				// if(ii == 0 && jj == 0) {
+	// 				// 	std::cout << "ii == 0 && jj == 0" << std::endl;
+	// 				// 	std::cout << "ii_p: " << ii_p << std::endl;
+	// 				// 	std::cout << "jj_p: " << jj_p << std::endl;
+	// 				// 	std::cout << "prop: " << assortMatAgeSex[ii][jj][ii_p][jj_p] << std::endl;
+	// 				// }
 
-				}
-			}
-			if(abs(counter - 1) > 1e-5) {
-					std::cout << "ii: " << ii << std::endl;
-					std::cout << "jj: " << jj << std::endl;
-					std::cout << "counter: " << counter << std::endl;
-			}
-		}
-	}
+	// 			}
+	// 		}
+	// 		if(abs(counter - 1) > 1e-5) {
+	// 				std::cout << "ii: " << ii << std::endl;
+	// 				std::cout << "jj: " << jj << std::endl;
+	// 				std::cout << "counter: " << counter << std::endl;
+	// 		}
+	// 	}
+	// }
 
 	// Calculate mixing matrix for completely random mixing
 
@@ -357,53 +357,53 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 	}
 
 	// CHECK IF THIS PRINTS CORRECTLY/SUMS TO 1 (it won't once we multiply by epsilons at the end of the loop above).
-	std::cout << "Checking final mixing matrix: " << std::endl;
-	for(int ii = 0; ii < nAge; ii++) {
-		for(int jj = 0; jj < nMale; jj++) {
-			for(int kk = 0; kk < nRisk; kk++) {
-				double counter = 0;
-				for(int ii_p = 0; ii_p < nAge; ii_p++) {
-					for(int jj_p = 0; jj_p < nMale; jj_p++) {
-						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
-							counter += mixMat[ii][jj][kk][ii_p][jj_p][kk_p];
-						}
-					}
-				}
-				if(abs(counter - 1) > 1e-5) {
-					std::cout << "ii: " << ii << std::endl;
-					std::cout << "jj: " << jj << std::endl;
-					std::cout << "kk: " << kk << std::endl;
-					std::cout << "counter: " << counter << std::endl;
-				}
-			}
-		}
-	}
+	// std::cout << "Checking final mixing matrix: " << std::endl;
+	// for(int ii = 0; ii < nAge; ii++) {
+	// 	for(int jj = 0; jj < nMale; jj++) {
+	// 		for(int kk = 0; kk < nRisk; kk++) {
+	// 			double counter = 0;
+	// 			for(int ii_p = 0; ii_p < nAge; ii_p++) {
+	// 				for(int jj_p = 0; jj_p < nMale; jj_p++) {
+	// 					for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+	// 						counter += mixMat[ii][jj][kk][ii_p][jj_p][kk_p];
+	// 					}
+	// 				}
+	// 			}
+	// 			if(abs(counter - 1) > 1e-5) {
+	// 				std::cout << "ii: " << ii << std::endl;
+	// 				std::cout << "jj: " << jj << std::endl;
+	// 				std::cout << "kk: " << kk << std::endl;
+	// 				std::cout << "counter: " << counter << std::endl;
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 
-	// Output array to match R format - maybe this can be moved into a separate function? Just for unit testing.
-	std::ofstream mixMatOut ("mixing_matrix.cout");
-	if(mixMatOut.is_open()){
+	// // Output array to match R format - maybe this can be moved into a separate function? Just for unit testing.
+	// std::ofstream mixMatOut ("mixing_matrix.cout");
+	// if(mixMatOut.is_open()){
 
-		for(int ii = 0; ii < nAge; ii++) {
-			for(int jj = 0; jj < nMale; jj++) {
-				for(int kk = 0; kk < nRisk; kk++) {
-					for(int ii_p = 0; ii_p < nAge; ii_p++) {
-						for(int jj_p = 0; jj_p < nMale; jj_p++) {
-							for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+	// 	for(int ii = 0; ii < nAge; ii++) {
+	// 		for(int jj = 0; jj < nMale; jj++) {
+	// 			for(int kk = 0; kk < nRisk; kk++) {
+	// 				for(int ii_p = 0; ii_p < nAge; ii_p++) {
+	// 					for(int jj_p = 0; jj_p < nMale; jj_p++) {
+	// 						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
 
-								if(jj != jj_p) { // Don't print same-sex mixing, since those rows are dropped from the R output
+	// 							if(jj != jj_p) { // Don't print same-sex mixing, since those rows are dropped from the R output
 
-									mixMatOut << (ii+1) << "," << jj << "," << (kk+1) << "," << (ii_p + 1) << "," << jj_p << "," << (kk_p + 1) << ","; 
-									mixMatOut << std::fixed << std::setprecision(15) << mixMat[ii][jj][kk][ii_p][jj_p][kk_p] << "\n";
-								}
-							}
-						}
-					}
-				}
-			}
-		}
+	// 								mixMatOut << (ii+1) << "," << jj << "," << (kk+1) << "," << (ii_p + 1) << "," << jj_p << "," << (kk_p + 1) << ","; 
+	// 								mixMatOut << std::fixed << std::setprecision(15) << mixMat[ii][jj][kk][ii_p][jj_p][kk_p] << "\n";
+	// 							}
+	// 						}
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
 
-	}
+	// }
 	
 
 
@@ -412,27 +412,27 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 void adjustPartnerships() { 
 
 	// Verify that the correct mixing matrix is getting loaded here
-	std::cout << "Checking input mixing matrix: " << std::endl;
-	for(int ii = 0; ii < nAge; ii++) {
-		for(int jj = 0; jj < nMale; jj++) {
-			for(int kk = 0; kk < nRisk; kk++) {
-				double counter = 0;
-				for(int ii_p = 0; ii_p < nAge; ii_p++) {
-					for(int jj_p = 0; jj_p < nMale; jj_p++) {
-						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
-							counter += mixMat[ii][jj][kk][ii_p][jj_p][kk_p];
-						}
-					}
-				}
-				if(abs(counter - 1) > 1e-5) {
-					std::cout << "ii: " << ii << std::endl;
-					std::cout << "jj: " << jj << std::endl;
-					std::cout << "kk: " << kk << std::endl;
-					std::cout << "counter: " << counter << std::endl;
-				}
-			}
-		}
-	}
+	// std::cout << "Checking input mixing matrix: " << std::endl;
+	// for(int ii = 0; ii < nAge; ii++) {
+	// 	for(int jj = 0; jj < nMale; jj++) {
+	// 		for(int kk = 0; kk < nRisk; kk++) {
+	// 			double counter = 0;
+	// 			for(int ii_p = 0; ii_p < nAge; ii_p++) {
+	// 				for(int jj_p = 0; jj_p < nMale; jj_p++) {
+	// 					for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+	// 						counter += mixMat[ii][jj][kk][ii_p][jj_p][kk_p];
+	// 					}
+	// 				}
+	// 			}
+	// 			if(abs(counter - 1) > 1e-5) {
+	// 				std::cout << "ii: " << ii << std::endl;
+	// 				std::cout << "jj: " << jj << std::endl;
+	// 				std::cout << "kk: " << kk << std::endl;
+	// 				std::cout << "counter: " << counter << std::endl;
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	// Calculate total number of partners reported by males and females
 	// Multiply mixing matrix by total partners by age/sex/risk
@@ -579,29 +579,29 @@ void adjustPartnerships() {
 	// }	
 
 	// Output array to match R format - maybe this can be moved into a separate function? Just for unit testing.
-	std::ofstream adjustedPartnersMatOut ("adjusted_partners.cout");
-	if(adjustedPartnersMatOut.is_open()){
+	// std::ofstream adjustedPartnersMatOut ("adjusted_partners.cout");
+	// if(adjustedPartnersMatOut.is_open()){
 
-		for(int ii = 0; ii < nAge; ii++) {
-			for(int jj = 0; jj < nMale; jj++) {
-				for(int kk = 0; kk < nRisk; kk++) {
-					for(int ii_p = 0; ii_p < nAge; ii_p++) {
-						for(int jj_p = 0; jj_p < nMale; jj_p++) {
-							for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+	// 	for(int ii = 0; ii < nAge; ii++) {
+	// 		for(int jj = 0; jj < nMale; jj++) {
+	// 			for(int kk = 0; kk < nRisk; kk++) {
+	// 				for(int ii_p = 0; ii_p < nAge; ii_p++) {
+	// 					for(int jj_p = 0; jj_p < nMale; jj_p++) {
+	// 						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
 
-								if(jj != jj_p) { // Don't print same-sex mixing, since those rows are dropped from the R output
+	// 							if(jj != jj_p) { // Don't print same-sex mixing, since those rows are dropped from the R output
 
-									adjustedPartnersMatOut << (ii+1) << "," << jj << "," << (kk+1) << "," << (ii_p + 1) << ","  << (kk_p + 1) << ","; 
-									adjustedPartnersMatOut << std::fixed << std::setprecision(15) << adjustedPartnersMat[ii][jj][kk][ii_p][jj_p][kk_p] << "\n";
-								}
-							}
-						}
-					}
-				}
-			}
-		}
+	// 								adjustedPartnersMatOut << (ii+1) << "," << jj << "," << (kk+1) << "," << (ii_p + 1) << ","  << (kk_p + 1) << ","; 
+	// 								adjustedPartnersMatOut << std::fixed << std::setprecision(15) << adjustedPartnersMat[ii][jj][kk][ii_p][jj_p][kk_p] << "\n";
+	// 							}
+	// 						}
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
 
-	}
+	// }
 }
 
 void calcLambda(Eigen::MatrixXd &pop) { 
@@ -795,21 +795,21 @@ void calcLambda(Eigen::MatrixXd &pop) {
 	}
 
 	// Save lambdaMat for comparison to R output
-	std::ofstream lambdaMatOut ("lambda_mat.cout");
-	if(lambdaMatOut.is_open()){
+	// std::ofstream lambdaMatOut ("lambda_mat.cout");
+	// if(lambdaMatOut.is_open()){
 
-		for(int ii = 0; ii < nAge; ii++) {
-			for(int jj = 0; jj < nMale; jj++) {
-				for(int kk = 0; kk < nRisk; kk++) {
+	// 	for(int ii = 0; ii < nAge; ii++) {
+	// 		for(int jj = 0; jj < nMale; jj++) {
+	// 			for(int kk = 0; kk < nRisk; kk++) {
 
-					lambdaMatOut << (ii+1) << "," << jj << "," << (kk+1) << ","; 
-					lambdaMatOut << std::fixed << std::setprecision(15) << lambdaMat[ii][jj][kk] << "\n";
+	// 				lambdaMatOut << (ii+1) << "," << jj << "," << (kk+1) << ","; 
+	// 				lambdaMatOut << std::fixed << std::setprecision(15) << lambdaMat[ii][jj][kk] << "\n";
 				
-				}
-			}
-		}
+	// 			}
+	// 		}
+	// 	}
 
-	}
+	// }
 
 }
 
@@ -817,23 +817,23 @@ void transmit(Eigen::MatrixXd &pop) {
 
 	const int nPopRows = pop.rows(); // Any way to move this out?
 
-	// Check to see if lambda mat is correctly loaded here:
-	std::cout << "Checking input lambda matrix: " << std::endl;
-	for(int ii = 0; ii < nAge; ii++) {
-		for(int jj = 0; jj < nMale; jj++) {
-			for(int kk = 0; kk < nRisk; kk++) {
+	// // Check to see if lambda mat is correctly loaded here:
+	// std::cout << "Checking input lambda matrix: " << std::endl;
+	// for(int ii = 0; ii < nAge; ii++) {
+	// 	for(int jj = 0; jj < nMale; jj++) {
+	// 		for(int kk = 0; kk < nRisk; kk++) {
 
-				if(lambdaMat[ii][jj][kk] < 1e-11) {
+	// 			if(lambdaMat[ii][jj][kk] < 1e-11) {
 
-					std::cout << "ii: " << ii << std::endl;
-					std::cout << "jj: " << jj << std::endl;
-					std::cout << "kk: " << kk << std::endl;
-					std::cout << "lambda: " << lambdaMat[ii][jj][kk] << std::endl;
+	// 				std::cout << "ii: " << ii << std::endl;
+	// 				std::cout << "jj: " << jj << std::endl;
+	// 				std::cout << "kk: " << kk << std::endl;
+	// 				std::cout << "lambda: " << lambdaMat[ii][jj][kk] << std::endl;
 
-				}
-			}
-		}
-	}
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 
 	// Create risk reduction array this would be easier to do outside the function
