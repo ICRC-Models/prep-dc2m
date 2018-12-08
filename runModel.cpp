@@ -44,11 +44,13 @@ int main() {
 	tStart = clock();
 
 	// Loop over time steps
-	for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
-	
-		pop(rowInd, timeInd) = timeIndex;
-	
-	}
+	for(int timeIndex = 0; timeIndex < nSteps; timeIndex++) {
+
+		for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
+		
+			pop(rowInd, timeInd) = timeIndex;
+		
+		}
 
 		distributeART(pop, timeIndex);
 
