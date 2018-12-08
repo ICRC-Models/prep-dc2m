@@ -65,7 +65,7 @@ class TestCSVs(unittest.TestCase):
                 self.assertAlmostEqual(float(val1), float(val2), places = 10, msg = "row %i"%row)    
 
     def test_mixing_matrix(self):
-        lines1, lines2 = loadCSVs("mixing_matrix.out", "mixing_matrix.cout")
+        lines1, lines2 = loadCSVs("mixing_matrix_1.out", "mixing_matrix_test.cout")
         row = 0;
         for row1, row2 in zip(lines1, lines2):
             row += 1;
@@ -74,7 +74,7 @@ class TestCSVs(unittest.TestCase):
                 self.assertAlmostEqual(float(val1), float(val2), places = 10, msg = "row %i"%row)         
 
     def test_adjusted_partners(self):
-        lines1, lines2 = loadCSVs("adjusted_partners.out", "adjusted_partners.cout")
+        lines1, lines2 = loadCSVs("adjusted_partners_1.out", "adjusted_partners_test.cout")
         row = 0;
         for row1, row2 in zip(lines1, lines2):
             row += 1;
@@ -83,22 +83,22 @@ class TestCSVs(unittest.TestCase):
                 self.assertAlmostEqual(float(val1), float(val2), places = 10, msg = "row %i"%row)  
 
     def test_lambda_mat(self):
-        lines1, lines2 = loadCSVs("lambda_mat.out", "lambda_mat.cout")
-        row = 0;
-        for row1, row2 in zip(lines1, lines2):
-            row += 1;
-            # print(row)
-            for val1, val2 in zip(row1.split(","), row2.split(",")):
-                self.assertAlmostEqual(float(val1), float(val2), places = 15, msg = "row %i"%row)
-
-    def test_transmit(self):
-        lines1, lines2 = loadCSVs("transmit.out", "transmit.cout")
+        lines1, lines2 = loadCSVs("lambda_mat_1.out", "lambda_mat_test.cout")
         row = 0;
         for row1, row2 in zip(lines1, lines2):
             row += 1;
             # print(row)
             for val1, val2 in zip(row1.split(","), row2.split(",")):
                 self.assertAlmostEqual(float(val1), float(val2), places = 10, msg = "row %i"%row)
+
+    def test_transmit(self):
+        lines1, lines2 = loadCSVs("transmit_1.out", "transmit_test.cout")
+        row = 0;
+        for row1, row2 in zip(lines1, lines2):
+            row += 1;
+            # print(row)
+            for val1, val2 in zip(row1.split(","), row2.split(",")):
+                self.assertAlmostEqual(float(val1), float(val2), places = 9, msg = "row %i"%row)
 
     def test_endPop(self):
         lines1, lines2 = loadCSVs("endPop.out", "endPop.cout")
@@ -110,15 +110,44 @@ class TestCSVs(unittest.TestCase):
                 self.assertAlmostEqual(float(val1), float(val2), places = 9, msg = "row %i"%row)                     
 
     def test_riskAdjust(self):
-            lines1, lines2 = loadCSVs("riskAdjust.out", "riskAdjust.cout")
-            row = 0;
-            for row1, row2 in zip(lines1, lines2):
-                row += 1;
-                # print(row)
-                for val1, val2 in zip(row1.split(","), row2.split(",")):
-                    self.assertAlmostEqual(float(val1), float(val2), places = 8, msg = "row %i"%row)                     
+        lines1, lines2 = loadCSVs("riskAdjust.out", "riskAdjust.cout")
+        row = 0;
+        for row1, row2 in zip(lines1, lines2):
+            row += 1;
+            # print(row)
+            for val1, val2 in zip(row1.split(","), row2.split(",")):
+                self.assertAlmostEqual(float(val1), float(val2), places = 8, msg = "row %i"%row)                     
+
+    def test_final(self):
+        lines1, lines2 = loadCSVs("pop_409.out", "pop_final.cout")
+        row = 0;
+        for row1, row2 in zip(lines1, lines2):
+            row += 1;
+            # print(row)
+            for val1, val2 in zip(row1.split(","), row2.split(",")):
+                self.assertAlmostEqual(float(val1), float(val2), places = 8, msg = "row %i"%row)                     
 
 
+    def generic_test(self, file1, file2, places):
+        lines1, lines2 = loadCSVs(file1, file2)
+        row = 0;
+        for row1, row2 in zip(lines1, lines2):
+            row += 1;
+            # print(row)
+            for val1, val2 in zip(row1.split(","), row2.split(",")):
+                self.assertAlmostEqual(float(val1), float(val2), places = places, msg = "%s: row %i"%(file1, row))
+
+    def test_everything(self):
+        fileBaseNames = ["distributeART", "distributeCondoms", "addBirths", "subtractDeaths", "agePop", "progressDisease", "mixing_matrix", "transmit", "endPop", "riskAdjust"]
+        ## fileBaseNames = ["mixing_matrix", "transmit"]
+        ## precisionPlaces = [7, 7]
+        precisionPlaces = [7, 7, 7, 7, 7, 7, 7, 7, 7, 7] # one for each type of file?
+        for timeStep in range(410):
+            for fileBase, precision in zip(fileBaseNames,precisionPlaces):
+                rFile = fileBase + "_" + str(timeStep) + ".out"
+                cFile = fileBase + "_" + str(timeStep) + ".cout"
+                self.generic_test(rFile, cFile, precision)
 
 if __name__ == '__main__':
     unittest.main()
+

@@ -1,8 +1,8 @@
 CFLAGS = -O3 --std=c++11 -g
 CC = clang++
 
-popTest: distributeART.o distributeCondoms.o addBirths.o subtractDeaths.o agePop.o progressDisease.o transmit.o endPop.o riskAdjust.o csvUtil.o
-	$(CC) $(CFLAGS) -o popTest main.cpp distributeART.o distributeCondoms.o addBirths.o subtractDeaths.o agePop.o progressDisease.o transmit.o endPop.o riskAdjust.o csvUtil.o
+runModel: distributeART.o distributeCondoms.o addBirths.o subtractDeaths.o agePop.o progressDisease.o transmit.o endPop.o riskAdjust.o csvUtil.o
+	$(CC) $(CFLAGS) -o runModel runModel.cpp distributeART.o distributeCondoms.o addBirths.o subtractDeaths.o agePop.o progressDisease.o transmit.o endPop.o riskAdjust.o csvUtil.o
 
 distributeART.o: distributeART.cpp
 	$(CC) $(CFLAGS) -c distributeART.cpp
@@ -36,4 +36,4 @@ csvUtil.o: csvUtil.cpp
 
 
 clean:
-	rm -f popTest *.o
+	rm -f runModel *.o

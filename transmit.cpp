@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <cmath>
 
-// clang++ -O3 -std=c++11 calcRisk.cpp csvUtil.cpp
+// clang++ -O3 -std=c++11 transmit.cpp csvUtil.cpp
 
 // prototype -- move to header eventually
 Eigen::MatrixXd readCSV(std::string filename, int cols, int rows);
@@ -48,6 +48,13 @@ const double theta = 0.5; // parameter that governs the extent to which differen
 // Mixing matrix: set up as 6D array
 double mixMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
 
+// Adjusted partners: array of dim mixMat containing number of adjusted partners for each partnership type
+double adjustedPartnersMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
+
+
+// Lambda matrix: final transmission risk, by age, sex, and risk. Not a mixing matrix (does not contain indices of partners). Calculated from lambda mixing matrix
+double lambdaMat[nAge][nMale][nRisk] = {0};
+
 // Partnership inputs
 int partners_cols = 4;
 int partners_rows = 72;
@@ -61,33 +68,22 @@ int deltas_cols = 1;
 int deltas_rows = 410; // This is time-step dependent
 Eigen::MatrixXd deltas = readCSV("deltas_smoothed.csv", deltas_cols, deltas_rows);
 
-double assortMatAgeSex[nAge][nMale][nAge][nMale] = {0};
-double assortMatRisk[nRisk][nRisk] = {0};
-
 // Epislons: these parameters govern the extent to which mixing is random or assortative. Can split this up by age and risk but this might require refactoring the code (see how I did this in R)
 int epsilons_cols = 1;
 int epsilons_rows = 410; // This is time-step dependent
 Eigen::MatrixXd epsilons = readCSV("epsilons_smoothed.csv", epsilons_cols, epsilons_rows);
 
-// Mixing matrix for completely random mixing
-double randomMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
 
 // Totals - these are used by more than one function
 double total_partners_sex[nMale] = {0};
 double total_partners_sex_age[nAge][nMale] = {0};
 double total_partners_sex_age_risk[nAge][nMale][nRisk] = {0};
 
-// Adjusted partners: array of dim mixMat containing number of adjusted partners for each partnership type
-double adjustedPartnersMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
-
 // Transmission risk parameters based on number of sex acts, male, and viral load/ART status of partner
 int betas_cols = 7;
 int betas_rows = 72;
 Eigen::MatrixXd betas_mat = readCSV("betas.csv", betas_cols, betas_rows);
 int transmissionRiskInd = 6; // Column of betas_mat containing transmission risk
-
-// Lambda matrix: final transmission risk, by age, sex, and risk. Not a mixing matrix (does not contain indices of partners). Calculated from lambda mixing matrix
-double lambdaMat[nAge][nMale][nRisk] = {0};
 
 // Risk reduction for interventions - move  these out
 // int rr_cols = 2;
@@ -98,10 +94,18 @@ double psiCirc = 0.60;
 double psiPrEP = 0.92;
 double psiCondom = 0.78;
 
+char buffer[50]; // For saving output files
 
 void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 	 const int nPopRows = pop.rows();
 
+	 // std::cout << "Inside calcMixMat...time_index: " << time_index << std::endl;
+
+	double assortMatAgeSex[nAge][nMale][nAge][nMale] = {0};
+	double assortMatRisk[nRisk][nRisk] = {0};
+
+	// Mixing matrix for completely random mixing
+	double randomMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
 
 	// Define epsilons. If I want different epsilons for age and risk I'll need to change this (and think carefully about whether code is still correct)
 	double epsilon_age = epsilons(time_index, 0);
@@ -124,6 +128,8 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 
 	// Assortative mixing by age and sex. Only heterosexual partnerships allowed. Use deltas to define age-disparate distribution.
 	double delta_age = deltas(time_index, 0);
+	// std::cout << "delta_age: " << delta_age << std::endl;
+
 	for(int ii = 0; ii < nAge; ii++) {
 		for(int jj = 0; jj < nMale; jj++) {
 			for(int ii_p = 0; ii_p < nAge; ii_p++) {
@@ -167,49 +173,48 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 		}
 	}
 
-	// Check if these assortativity matrices all sum to 1:
-	std::cout << "Checking risk assortativity matrix" << std::endl;
-	for(int kk = 0; kk < nRisk; kk++) {
-		double counter = 0;
-		for(int kk_p = 0; kk_p < nRisk; kk_p++) {
-			counter += assortMatRisk[kk][kk_p];
-		}
-		if(abs(counter - 1) > 1e-5) {
-			std::cout << "kk: " << kk << std::endl;
-			std::cout << "counter: " << counter << std::endl;
-		}
-	}
+	// // Check if these assortativity matrices all sum to 1:
+	// std::cout << "Checking risk assortativity matrix" << std::endl;
+	// for(int kk = 0; kk < nRisk; kk++) {
+	// 	double counter = 0;
+	// 	for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+	// 		counter += assortMatRisk[kk][kk_p];
+	// 	}
+	// 	if(abs(counter - 1) > 1e-10) {
+	// 		std::cout << "kk: " << kk << std::endl;
+	// 		std::cout << "counter: " << counter << std::endl;
+	// 	}
+	// }
 
-	std::cout << "Checking age/sex assortativity matrix" << std::endl;
+	// std::cout << "Checking age/sex assortativity matrix" << std::endl;
 
-	for(int ii = 0; ii < nAge; ii++) {
-		for(int jj = 0; jj < nMale; jj++) {
-			double counter = 0;
-			for(int ii_p = 0; ii_p < nAge; ii_p++) {
-				for(int jj_p = 0; jj_p < nMale; jj_p++) {
+	// for(int ii = 0; ii < nAge; ii++) {
+	// 	for(int jj = 0; jj < nMale; jj++) {
+	// 		double counter = 0;
+	// 		for(int ii_p = 0; ii_p < nAge; ii_p++) {
+	// 			for(int jj_p = 0; jj_p < nMale; jj_p++) {
 
-					counter += assortMatAgeSex[ii][jj][ii_p][jj_p];
+	// 				counter += assortMatAgeSex[ii][jj][ii_p][jj_p];
 
-					// if(ii == 0 && jj == 0) {
-					// 	std::cout << "ii == 0 && jj == 0" << std::endl;
-					// 	std::cout << "ii_p: " << ii_p << std::endl;
-					// 	std::cout << "jj_p: " << jj_p << std::endl;
-					// 	std::cout << "prop: " << assortMatAgeSex[ii][jj][ii_p][jj_p] << std::endl;
-					// }
+	// 				// if(ii == 0 && jj == 0) {
+	// 				// 	std::cout << "ii == 0 && jj == 0" << std::endl;
+	// 				// 	std::cout << "ii_p: " << ii_p << std::endl;
+	// 				// 	std::cout << "jj_p: " << jj_p << std::endl;
+	// 				// 	std::cout << "prop: " << assortMatAgeSex[ii][jj][ii_p][jj_p] << std::endl;
+	// 				// }
 
-				}
-			}
-			if(abs(counter - 1) > 1e-5) {
-					std::cout << "ii: " << ii << std::endl;
-					std::cout << "jj: " << jj << std::endl;
-					std::cout << "counter: " << counter << std::endl;
-			}
-		}
-	}
+	// 			}
+	// 		}
+	// 		if(abs(counter - 1) > 1e-10) {
+	// 				std::cout << "ii: " << ii << std::endl;
+	// 				std::cout << "jj: " << jj << std::endl;
+	// 				std::cout << "counter: " << counter << std::endl;
+	// 		}
+	// 	}
+	// }
 
 	// Calculate mixing matrix for completely random mixing
-
-	// Populate partners array
+	// Populate partners array 
 
 	for(int ii = 0; ii < partners_rows; ii++) {
 	
@@ -221,6 +226,16 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 	}
 
 
+	// Reset the total partners arrays to zero - could think of a better way of doing this
+	for(int ii = 0; ii < nAge; ii++) {
+		for(int jj = 0; jj < nMale; jj++) {
+			for(int kk = 0; kk < nRisk; kk++) {
+				total_partners_sex[jj] = 0;
+				total_partners_sex_age[ii][jj] = 0;
+				total_partners_sex_age_risk[ii][jj][kk] = 0;
+			}
+		}
+	}
 	int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart;
 
 	for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
@@ -239,29 +254,6 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 
 	}
 
-	// for(int ii = 0; ii < nMale; ii++) {
-	// 	std::cout << "Total partners by sex: " << std::endl;
-	// 	std::cout << "male: " << ii << "; " << total_partners_sex[ii] << std::endl;
-	// }
-
-	// for(int ii = 0; ii < nAge; ii++) {
-	// 	for(int jj = 0; jj < nMale; jj++) {
-	// 		std::cout << "Total partners by age and sex: " << std::endl;
-	// 		std::cout << "age: " << ii << "; " << "male: " << jj << "; " << total_partners_sex_age[ii][jj] << std::endl;
-	// 	}
-	// }
-
-	// for(int ii = 0; ii < nAge; ii++) {
-	// 	for(int jj = 0; jj < nMale; jj++) {
-	// 		for(int kk = 0; kk < nRisk; kk++) {
-	// 		std::cout << "Total partners by age and sex and risk: " << std::endl;
-	// 		std::cout << "age: " << ii << "; " << "male: " << jj << "; " << "risk: " << kk << "; " <<  total_partners_sex_age_risk[ii][jj][kk] << std::endl;
-	// 		}
-	// 	}
-	// }
-
-
-
 	// Proportions
 	// Proportion of partners, by each for each sex (12x2)
 	double prop_age_by_sex[nAge][nMale] = {0};
@@ -273,13 +265,6 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 
 		}
 	}
-
-	// for(int ii = 0; ii < nAge; ii++) {
-	// 	for(int jj = 0; jj < nMale; jj++) {
-	// 		std::cout << "Proportion partners by age for each sex: " << std::endl;
-	// 		std::cout << "age: " << ii << "; " << "male: " << jj << "; " << prop_age_by_sex[ii][jj] << std::endl;
-	// 	}
-	// }
 
 
 	// Proportion of partners by risk for each age/sex combination (12x2x3)
@@ -293,23 +278,6 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 			}
 		}
 	}
-
-	// for(int ii = 0; ii < nAge; ii++) {
-	// 	for(int jj = 0; jj < nMale; jj++) {
-	// 		std::cout << "Proportion of partners by age and sex: " << std::endl;
-	// 		std::cout << "age: " << ii << "; " << "male: " << jj << "; " << prop_age_by_sex[ii][jj] << std::endl;
-	// 	}
-	// }
-
-	// for(int ii = 0; ii < nAge; ii++) {
-	// 	for(int jj = 0; jj < nMale; jj++) {
-	// 		for(int kk = 0; kk < nRisk; kk++) {
-	// 		std::cout << "Proportion of partners by age and sex and risk: " << std::endl;
-	// 		std::cout << "age: " << ii << "; " << "male: " << jj << "; " << "risk: " << kk << "; " <<  prop_risk_by_age_sex[ii][jj][kk] << std::endl;
-	// 		}
-	// 	}
-	// }
-
 
 
 	// Calculate mixing matrix: weighted average of random mixing and assortative mixing
@@ -357,31 +325,33 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 	}
 
 	// CHECK IF THIS PRINTS CORRECTLY/SUMS TO 1 (it won't once we multiply by epsilons at the end of the loop above).
-	std::cout << "Checking final mixing matrix: " << std::endl;
-	for(int ii = 0; ii < nAge; ii++) {
-		for(int jj = 0; jj < nMale; jj++) {
-			for(int kk = 0; kk < nRisk; kk++) {
-				double counter = 0;
-				for(int ii_p = 0; ii_p < nAge; ii_p++) {
-					for(int jj_p = 0; jj_p < nMale; jj_p++) {
-						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
-							counter += mixMat[ii][jj][kk][ii_p][jj_p][kk_p];
-						}
-					}
-				}
-				if(abs(counter - 1) > 1e-5) {
-					std::cout << "ii: " << ii << std::endl;
-					std::cout << "jj: " << jj << std::endl;
-					std::cout << "kk: " << kk << std::endl;
-					std::cout << "counter: " << counter << std::endl;
-				}
-			}
-		}
-	}
+	// std::cout << "Checking final mixing matrix: " << std::endl;
+	// for(int ii = 0; ii < nAge; ii++) {
+	// 	for(int jj = 0; jj < nMale; jj++) {
+	// 		for(int kk = 0; kk < nRisk; kk++) {
+	// 			double counter = 0;
+	// 			for(int ii_p = 0; ii_p < nAge; ii_p++) {
+	// 				for(int jj_p = 0; jj_p < nMale; jj_p++) {
+	// 					for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+	// 						counter += mixMat[ii][jj][kk][ii_p][jj_p][kk_p];
+	// 					}
+	// 				}
+	// 			}
+	// 			if(abs(counter - 1) > 1e-10) {
+	// 				std::cout << "ii: " << ii << std::endl;
+	// 				std::cout << "jj: " << jj << std::endl;
+	// 				std::cout << "kk: " << kk << std::endl;
+	// 				std::cout << "counter: " << counter << std::endl;
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 
 	// Output array to match R format - maybe this can be moved into a separate function? Just for unit testing.
-	std::ofstream mixMatOut ("mixing_matrix.cout");
+	sprintf(buffer, "mixing_matrix_%i.cout", time_index);
+	std::ofstream mixMatOut (buffer);
+	// std::ofstream mixMatOut ("mixing_matrix_test.cout");
 	if(mixMatOut.is_open()){
 
 		for(int ii = 0; ii < nAge; ii++) {
@@ -412,27 +382,27 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 void adjustPartnerships() { 
 
 	// Verify that the correct mixing matrix is getting loaded here
-	std::cout << "Checking input mixing matrix: " << std::endl;
-	for(int ii = 0; ii < nAge; ii++) {
-		for(int jj = 0; jj < nMale; jj++) {
-			for(int kk = 0; kk < nRisk; kk++) {
-				double counter = 0;
-				for(int ii_p = 0; ii_p < nAge; ii_p++) {
-					for(int jj_p = 0; jj_p < nMale; jj_p++) {
-						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
-							counter += mixMat[ii][jj][kk][ii_p][jj_p][kk_p];
-						}
-					}
-				}
-				if(abs(counter - 1) > 1e-5) {
-					std::cout << "ii: " << ii << std::endl;
-					std::cout << "jj: " << jj << std::endl;
-					std::cout << "kk: " << kk << std::endl;
-					std::cout << "counter: " << counter << std::endl;
-				}
-			}
-		}
-	}
+	// std::cout << "Checking input mixing matrix: " << std::endl;
+	// for(int ii = 0; ii < nAge; ii++) {
+	// 	for(int jj = 0; jj < nMale; jj++) {
+	// 		for(int kk = 0; kk < nRisk; kk++) {
+	// 			double counter = 0;
+	// 			for(int ii_p = 0; ii_p < nAge; ii_p++) {
+	// 				for(int jj_p = 0; jj_p < nMale; jj_p++) {
+	// 					for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+	// 						counter += mixMat[ii][jj][kk][ii_p][jj_p][kk_p];
+	// 					}
+	// 				}
+	// 			}
+	// 			if(abs(counter - 1) > 1e-5) {
+	// 				std::cout << "ii: " << ii << std::endl;
+	// 				std::cout << "jj: " << jj << std::endl;
+	// 				std::cout << "kk: " << kk << std::endl;
+	// 				std::cout << "counter: " << counter << std::endl;
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	// Calculate total number of partners reported by males and females
 	// Multiply mixing matrix by total partners by age/sex/risk
@@ -496,31 +466,6 @@ void adjustPartnerships() {
 		}
 	}
 
-	// std::cout << "Printing discrepancy matrix: " << std::endl;
-	// for(int ii = 0; ii < nAge; ii++) {
-	// 	for(int jj = 0; jj < nMale; jj++) {
-	// 		for(int kk = 0; kk < nRisk; kk++) {
-	// 			for(int ii_p = 0; ii_p < nAge; ii_p++) {
-	// 				for(int jj_p = 0; jj_p < nMale; jj_p++) {
-	// 					for(int kk_p = 0; kk_p < nRisk; kk_p++) {
-
-	// 						if(jj != jj_p) {
-
-	// 							std::cout << "ii: " << ii << std::endl;
-	// 							std::cout << "jj: " << jj << std::endl;
-	// 							std::cout << "kk: " << kk << std::endl;
-	// 							std::cout << "ii_p: " << ii_p << std::endl;
-	// 							std::cout << "jj_p: " << jj_p << std::endl;
-	// 							std::cout << "kk_p: " << kk_p << std::endl;
-	// 							std::cout << "disc: " << discMat[ii][jj][kk][ii_p][jj_p][kk_p] << std::endl;
-	// 						}
-		
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
 
 	// Calculate adjusted partnerships per year based on theta (controls the degree to which female or male reports are believed)
 	// adjusted_partners = partners * discrepancy ^ (-(1 - theta))
@@ -552,34 +497,8 @@ void adjustPartnerships() {
 		}
 	}
 
-	// std::cout << "Printing adjusted partners matrix: " << std::endl;
-	// for(int ii = 0; ii < nAge; ii++) {
-	// 	for(int jj = 0; jj < nMale; jj++) {
-	// 		for(int kk = 0; kk < nRisk; kk++) {
-	// 			for(int ii_p = 0; ii_p < nAge; ii_p++) {
-	// 				for(int jj_p = 0; jj_p < nMale; jj_p++) {
-	// 					for(int kk_p = 0; kk_p < nRisk; kk_p++) {
-
-	// 						if(jj != jj_p) {
-
-	// 							std::cout << "ii: " << ii << std::endl;
-	// 							std::cout << "jj: " << jj << std::endl;
-	// 							std::cout << "kk: " << kk << std::endl;
-	// 							std::cout << "ii_p: " << ii_p << std::endl;
-	// 							std::cout << "jj_p: " << jj_p << std::endl;
-	// 							std::cout << "kk_p: " << kk_p << std::endl;
-	// 							std::cout << "adjusted_partners: " << adjustedPartnersMat[ii][jj][kk][ii_p][jj_p][kk_p] << std::endl;
-	// 						}
-		
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }	
-
 	// Output array to match R format - maybe this can be moved into a separate function? Just for unit testing.
-	std::ofstream adjustedPartnersMatOut ("adjusted_partners.cout");
+	std::ofstream adjustedPartnersMatOut ("adjusted_partners_test.cout");
 	if(adjustedPartnersMatOut.is_open()){
 
 		for(int ii = 0; ii < nAge; ii++) {
@@ -624,25 +543,6 @@ void calcLambda(Eigen::MatrixXd &pop) {
 
 	}
 
-	// std::cout << "Printing betas mat: " << std::endl;
-	// for(int ii = 0; ii < nMale; ii++) {
-	// 	for(int jj = 0; jj < nRisk; jj++) {
-	// 		for(int kk = 0; kk < nVl; kk++) {
-	// 			for (int ll = 0; ll < nArt; ll ++) {
-
-	// 				std::cout << "ii: " << ii << std::endl;
-	// 				std::cout << "jj: " << jj << std::endl;
-	// 				std::cout << "kk: " << kk << std::endl;
-	// 				std::cout << "ll: " << ll << std::endl;
-	// 				std::cout << "transmission risk: " << betas[ii][jj][kk][ll] << std::endl;
-
-
-	// 			}
-	// 		}
-	// 	}
-	// }
-
-
 	// Calculate number of HIV+ people in each ART and viral load category by age, sex, and risk
 	double total_hivpos_age_sex_risk_vl_art[nAge][nMale][nRisk][nVl][nArt] = {0};
 
@@ -667,43 +567,6 @@ void calcLambda(Eigen::MatrixXd &pop) {
         total_age_sex_risk[iage][imale][irisk] += pop(rowInd, countInd);
 
 	}
-
-	// std::cout << "Printing total_hivpos_age_sex_risk_vl_art mat: " << std::endl;
-	// for(int ii = 0; ii < nAge; ii++) {
-	// 	for(int jj = 0; jj < nMale; jj++) {
-	// 		for(int kk = 0; kk < nRisk; kk++) {
-	// 			for (int ll = 0; ll < nVl; ll ++) {
-	// 				for (int mm = 0; mm < nArt; mm ++) {
-
-	// 					if(total_hivpos_age_sex_risk_vl_art[ii][jj][kk][ll][mm] > 1e-5) {
-
-	// 						std::cout << "ii: " << ii << std::endl;
-	// 						std::cout << "jj: " << jj << std::endl;
-	// 						std::cout << "kk: " << kk << std::endl;
-	// 						std::cout << "ll: " << ll << std::endl;
-	// 						std::cout << "mm: " << mm << std::endl;
-	// 						std::cout << "Total HIV+: " << total_hivpos_age_sex_risk_vl_art[ii][jj][kk][ll][mm] << std::endl;
-
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
-
-	// std::cout << "Printing total_age_sex_risk mat: " << std::endl;
-	// for(int ii = 0; ii < nAge; ii++) {
-	// 	for(int jj = 0; jj < nMale; jj++) {
-	// 		for(int kk = 0; kk < nRisk; kk++) {
-
-	// 			std::cout << "ii: " << ii << std::endl;
-	// 			std::cout << "jj: " << jj << std::endl;
-	// 			std::cout << "kk: " << kk << std::endl;
-	// 			std::cout << "Total : " << total_age_sex_risk[ii][jj][kk] << std::endl;
-
-	// 		}
-	// 	}
-	// }
 
 	// Per-partnership per year transmission risk: weighted average of transmission risk based on counts of HIV+ in each viral load category in each partnership divided by total population (HIV+ and HIV-) in each age/sex/risk category
 	double ppRiskMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
@@ -795,7 +658,8 @@ void calcLambda(Eigen::MatrixXd &pop) {
 	}
 
 	// Save lambdaMat for comparison to R output
-	std::ofstream lambdaMatOut ("lambda_mat.cout");
+
+	std::ofstream lambdaMatOut ("lambda_mat_test.cout");
 	if(lambdaMatOut.is_open()){
 
 		for(int ii = 0; ii < nAge; ii++) {
@@ -818,22 +682,22 @@ void transmit(Eigen::MatrixXd &pop) {
 	const int nPopRows = pop.rows(); // Any way to move this out?
 
 	// Check to see if lambda mat is correctly loaded here:
-	std::cout << "Checking input lambda matrix: " << std::endl;
-	for(int ii = 0; ii < nAge; ii++) {
-		for(int jj = 0; jj < nMale; jj++) {
-			for(int kk = 0; kk < nRisk; kk++) {
+	// std::cout << "Checking input lambda matrix: " << std::endl;
+	// for(int ii = 0; ii < nAge; ii++) {
+	// 	for(int jj = 0; jj < nMale; jj++) {
+	// 		for(int kk = 0; kk < nRisk; kk++) {
 
-				if(lambdaMat[ii][jj][kk] < 1e-11) {
+	// 			if(lambdaMat[ii][jj][kk] < 1e-11) {
 
-					std::cout << "ii: " << ii << std::endl;
-					std::cout << "jj: " << jj << std::endl;
-					std::cout << "kk: " << kk << std::endl;
-					std::cout << "lambda: " << lambdaMat[ii][jj][kk] << std::endl;
+	// 				std::cout << "ii: " << ii << std::endl;
+	// 				std::cout << "jj: " << jj << std::endl;
+	// 				std::cout << "kk: " << kk << std::endl;
+	// 				std::cout << "lambda: " << lambdaMat[ii][jj][kk] << std::endl;
 
-				}
-			}
-		}
-	}
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 
 	// Create risk reduction array this would be easier to do outside the function
@@ -954,9 +818,9 @@ void transmit(Eigen::MatrixXd &pop) {
 // int main(){
 //     clock_t tStart;
 //     clock_t tEnd;
-//     Eigen::MatrixXd pop = readCSV("progressDisease.out", pop_cols, pop_rows);
+//     Eigen::MatrixXd pop = readCSV("progressDisease_1.out", pop_cols, pop_rows);
 //     tStart = clock();
-//     calcMixMat(pop, 409);
+//     calcMixMat(pop, 1);
 //     tEnd = clock();
 //     std::cout << "calcMixMat time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
     
@@ -974,5 +838,5 @@ void transmit(Eigen::MatrixXd &pop) {
 //     transmit(pop);
 //     tEnd = clock();
 //     std::cout << "transmit time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
-//    	writeCSV(pop, "transmit.cout");
+//    	writeCSV(pop, "transmit_test.cout");
 // }

@@ -116,9 +116,14 @@ void progressDisease(Eigen::MatrixXd &pop) {
 	    if(ihiv == 1 & icd4 > 0 & ivl > 0 & iart == 0) { // Applies only to HIV+ individuals not on ART
 	    	 // Efflux
 	    	// CD4
-	    	pop(rowInd, diffInd) -= pop(rowInd, countInd) * (1- exp(-time_step/cd4_prog[imale][ivl-1][icd4-1]));
+	    	if(icd4 < 5) { // Can 't leave the last CD4 category
+	    		pop(rowInd, diffInd) -= pop(rowInd, countInd) * (1- exp(-time_step/cd4_prog[imale][ivl-1][icd4-1]));
+	    	}
 	    	// VL
-	    	pop(rowInd, diffInd) -= pop(rowInd, countInd) * (1- exp(-time_step/vl_prog[imale][ivl-1][icd4-1]));
+	    	if(ivl < 5) { // Can't leave the last VL category
+	    		pop(rowInd, diffInd) -= pop(rowInd, countInd) * (1- exp(-time_step/vl_prog[imale][ivl-1][icd4-1]));
+	    	}
+
 
 	    	// Influx: add this to compartment of one CD4/VL category later (for all but the last age group). This seems easier in an array.
 	    	// CD4
