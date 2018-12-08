@@ -117,6 +117,32 @@ class TestCSVs(unittest.TestCase):
             # print(row)
             for val1, val2 in zip(row1.split(","), row2.split(",")):
                 self.assertAlmostEqual(float(val1), float(val2), places = 8, msg = "row %i"%row)                     
+   
+    def test_outputPop(self):
+        lines1, lines2 = loadCSVs("pop_final.out", "pop_final.cout")
+        row = 0;
+        for row1, row2 in zip(lines1, lines2):
+            row += 1;
+            # print(row)
+            for val1, val2 in zip(row1.split(","), row2.split(",")):
+                self.assertAlmostEqual(float(val1), float(val2), places = 8, msg = "row %i"%row)                     
+
+
+    def test_allOutput(self):
+        filenum = 0
+        for ii in range(410):
+            filenum += 1
+            rfile = "pop_%i.out"%ii
+            cfile = "pop_%i.cout"%ii
+            lines1, lines2 = loadCSVs(rfile, cfile)
+            row = 0
+            for row1, row2 in zip(lines1, lines2):
+                row += 1;
+                # print(row)
+                column = 0
+                for val1, val2 in zip(row1.split(","), row2.split(",")):
+                    column += 1
+                    self.assertAlmostEqual(float(val1), float(val2), places = 8, msg = "file %s row %i column %i"%(rfile, row, column))
 
     def test_final(self):
         lines1, lines2 = loadCSVs("pop_409.out", "pop_final.cout")

@@ -44,14 +44,11 @@ int main() {
 	tStart = clock();
 
 	// Loop over time steps
-	for(int timeIndex = 0; timeIndex < nSteps; timeIndex++) {
-
-		// Needed for now to compare to R-output. Otherwise could get rid of it to speed things up.
-		for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
+	for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
 	
-			pop(rowInd, timeInd) = timeIndex;
+		pop(rowInd, timeInd) = timeIndex;
 	
-		}
+	}
 
 		distributeART(pop, timeIndex);
 
@@ -77,9 +74,9 @@ int main() {
 
 		riskAdjust(pop);
 
-
 		// sprintf(buffer, "pop_%i.cout", timeIndex);
 		// writeCSV(pop, buffer);
+
 
 		
 	}
@@ -95,3 +92,4 @@ int main() {
 
 
 }
+

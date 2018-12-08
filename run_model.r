@@ -99,9 +99,6 @@ pop[risk_props, count := count * prop]
 
 ## Seed infections - this is currently adding 0.1% of total population to infected groups, but not subtracting them from the susceptible pool.  Need to confirm with Roger
 seedInfections(pop, 0.001)
-# 
-# fwrite(pop, col.names=FALSE, file = "pop.csv")
-# fwrite(init_pop, col.names=FALSE, file = "init_pop.csv")
 
 nsteps = 1
 
