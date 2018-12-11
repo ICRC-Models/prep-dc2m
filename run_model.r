@@ -109,7 +109,7 @@ print(pop[41569, ])
 ## Run model
 for(tt in 1:nsteps) {
 
-  ## tt <- 410
+  # tt <- 410
   print(tt)
 
   pop[, time := (tt-1)] # add time column to pop? why if you're passsing tt?
@@ -119,7 +119,7 @@ for(tt in 1:nsteps) {
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
 
   fwrite(pop, col.names=FALSE, file=paste0("pop_", (tt-1), ".out"))
-  
+
   ## Distribute ART coverage
   start_time <- Sys.time()
   distributeART(pop, tt)
@@ -166,12 +166,12 @@ for(tt in 1:nsteps) {
   addBirths(pop)
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file=paste0("addBirths_", (tt-1), ".out"))
-  
+
   subtractDeaths(pop)
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file=paste0("subtractDeaths_", (tt-1), ".out"))
-  
-  
+
+
   agePop(pop, tstep)
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file=paste0("agePop_", (tt-1), ".out"))
@@ -180,7 +180,7 @@ for(tt in 1:nsteps) {
   progressDisease(pop, tstep)
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file=paste0("progressDisease_", (tt-1), ".out"))
-  
+
   ## Transmission
   ## Calculate the mixing matrix
   start_time <- Sys.time()
@@ -190,13 +190,13 @@ for(tt in 1:nsteps) {
   print(end_time - start_time)
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   ## fwrite(pop, col.names=FALSE, file="calcMixMat.out")
-  
+
   setorder(mixing_matrix, age, male, risk, age_p, male_p, risk_p)
   setcolorder(mixing_matrix, c("age", "male", "risk", "age_p", "male_p", "risk_p", "prop"))
   fwrite(mixing_matrix, col.names = FALSE, file = paste0("mixing_matrix_", (tt-1), ".out"))
 
   ## Calculate adjusted partnerships per year
-  start_time <- Sys.time() 
+  start_time <- Sys.time()
   adjustPartnerships(pop, mixing_matrix)
   end_time <- Sys.time()
   print("adjustPartnerships time")
@@ -204,35 +204,35 @@ for(tt in 1:nsteps) {
   setorder(adjusted_partners, age, male, risk, age_p, risk_p)
   setcolorder(adjusted_partners, c("age", "male", "risk", "age_p", "risk_p", "adjusted_partners"))
   fwrite(adjusted_partners, col.names = FALSE, file = paste0("adjusted_partners_", (tt-1), ".out"))
-  
+
   ## Calculate lambda
-  start_time <- Sys.time() 
+  start_time <- Sys.time()
   calcLambda(pop, mixing_matrix, adjusted_partners)
   end_time <- Sys.time()
   print("calcLambda time")
   print(end_time - start_time)
-  
+
   setorder(lambda_mat, age, male, risk)
   setcolorder(lambda_mat, c("age", "male", "risk", "lambda"))
   fwrite(lambda_mat, col.names = FALSE, file = paste0("lambda_mat_", (tt-1), ".out"))
-  
+
   ## Transmit infections
-  start_time <- Sys.time() 
+  start_time <- Sys.time()
   transmit(pop, lambda_mat)
   end_time <- Sys.time()
   print("transmit time")
   print(end_time - start_time)
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file=paste0("transmit_", (tt-1), ".out"))
-  
+
   # Compute end-of-year population and set difference back to zero for next iteration of loop
   pop[, c("count", "diff") := list(count + diff, 0)]
   setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
   fwrite(pop, col.names=FALSE, file=paste0("endPop_", (tt-1), ".out"))
-  
-  
+
+
   # Adjust population to match risk prevalence
-  start_time <- Sys.time() 
+  start_time <- Sys.time()
   riskAdjust(pop)
   end_time <- Sys.time()
   print("riskAdjust time")

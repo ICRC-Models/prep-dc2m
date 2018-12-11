@@ -53,32 +53,3 @@ Eigen::MatrixXd readCSV(std::string filename, int cols, int rows) {
   }
   return res;
 }
-
-Eigen::MatrixXd readCSVOld(std::string filename, int cols, int rows){
-  std::cout.precision(20);
-  Eigen::MatrixXd res = Eigen::MatrixXd(rows, cols);
-  std::ifstream indata;
-
-  indata.open(filename);
-
-  std::string line;
-  int row = 0;
-  while (getline(indata, line))
-  {
-    std::stringstream lineStream(line);
-    std::string cell;
-    int col = 0;
-    while (std::getline(lineStream, cell, ','))
-    {
-      double tmp = std::stod(cell);
-      // std::cout << "cell " << cell << " " << tmp << std::endl;
-      res(row,col) = tmp;
-      col++;
-    }
-  row++;
-  if (row > 100){
-    break;
-  }
-  }
-  return res;
-}
