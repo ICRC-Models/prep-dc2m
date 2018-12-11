@@ -111,21 +111,52 @@ void addBirths(int time_index){
     int prep = 0;
     int condom = 0;
     int art = 0;
+    int age = 1; // baby
 
     for (int hiv : hivBins){
-        for (int age : ageBins){
-            for (int male : maleBins){
-                for (int risk : riskBins){
-                    for (int cd4 : cd4Bins){
-                        for (int vl : vlBins){
-                            for (int circ : circBins){
-                                double diff = 0;
-                                double mult = 1;
-                                // Find proportion of births going into this risk group
-                                riskProp = risk_props_mat(imale * nRisk + irisk, risk_prop_ind);
-                                mult = mult * riskProp;
-                                // do stuff
+        for (int male : maleBins){
+            for (int risk : riskBins){
+                for (int cd4 : cd4Bins){
+                    for (int vl : vlBins){
+                        for (int circ : circBins){
+                            double diff = 0;
+                            double mult = 1;
+                            // Find proportion of births going into this risk group
+                            riskProp = risk_props_mat(male * nRisk + risk, risk_prop_ind);
+                            mult = mult * riskProp;
+
+                            // Allocate across sex and circumcision status
+                            if (male == 1) {
+                                mult = mult * propMale;
+
+                                if (circ == 1) {
+                                    mult = mult * nncirc_prop;
+                                }
+                                else {
+                                    mult = mult * (1-nncirc_prop);
+                                }
                             }
+                            else {
+                                mult = mult * (1-propMale);
+                                if(circ == 1) { // No females circumcised
+                                    mult = 0;
+                                }
+                            }
+
+                            // Allocate across HIV status
+                            if (hiv == 0) {
+                                if (vl == 0 && cd4 == 0 && art == 0) {
+                                    diff = neg_births * mult;
+                                }
+                            }
+                            else {
+                                if (vl == 1 && cd4 == 1 && art == 0) {
+                                    diff = pos_births * mult;
+                                }
+                            }
+
+                            // Add to diff column of pop
+                            popDiff[hiv][age][male][risk][cd4][vl][circ][prep][condom][art] += diff;
                         }
                     }
                 }
@@ -133,80 +164,8 @@ void addBirths(int time_index){
         }
     }
 
-
-  for (int rowInd : ageInds0){
-
-        ihiv = pop(rowInd, hivInd);
-        iage = pop(rowInd, ageInd) - 1; // 1 indexed fucker
-        imale = pop(rowInd, maleInd);
-        irisk = pop(rowInd, riskInd) - 1; // 1 indexed fucker
-        icd4 = pop(rowInd, cd4Ind);
-        ivl = pop(rowInd, vlInd);
-        icirc = pop(rowInd, circInd);
-        iprep = pop(rowInd, prepInd);
-        icondom = pop(rowInd, condomInd);
-        iart = pop(rowInd, artInd);
-
-        double diff = 0; // Tracker for number of births
-        double mult = 1; // Multiplier for allocating proportions
-        // std::cout << "iage: " << iage << std::endl;
-
-        // Births are only allocated into these compartments. Could maybe search for these indicators outside
-     	if(iprep == 0 & icondom == 0 & iart == 0) {
-
-
-	        // Find proportion of births going into this risk group
-	        riskProp = risk_props_mat(imale * nRisk + irisk, risk_prop_ind);
-	        mult = mult * riskProp;
-
-	        // Allocate across sex and circumcision status
-	        if(imale == 1) {
-	        	mult = mult * propMale;
-
-	        	if(icirc == 1) {
-	        		mult = mult * nncirc_prop;
-	        	} else {
-	        		mult = mult * (1-nncirc_prop);
-	        	}
-	        } else {
-
-	        	mult = mult * (1-propMale);
-
-	        	if(icirc == 1) { // No females circumcised
-	        		mult = 0;
-	        	}
-	        }
-
-	        // Allocate across HIV status
-	        if(ihiv == 0) {
-	        	if(ivl == 0 && icd4 == 0 && iart == 0) {
-	        		diff = neg_births * mult;
-	        	}
-	        } else {
-	        	if(ivl == 1 && icd4 == 1 && iart == 0) {
-	        		diff = pos_births * mult;
-	        	}
-	        }
-
-	         // if(diff > 1) {
-	         // 	std::cout << "male: " << imale << std::endl;
-	         // 	std::cout << "risk: " << irisk << std::endl;
-	         // 	std::cout << "diff: " << diff << std::endl;
-	         // }
-
-
-  		// std:: cout << "rowInd: " << rowInd << std::endl;
-  		// std:: cout << "abs: " << abs(rowInd -  577) << std::endl;
-
-	        // Add to diff column of pop
-	         pop(rowInd, diffInd) += diff;
-	     }
-
-
-    }
-
-
 }
+
 
 // clang++ -O3 -std=c++11 -g addBirths.cpp csvUtil.cpp globals.cpp
 // int main(){
