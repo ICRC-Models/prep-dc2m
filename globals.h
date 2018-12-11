@@ -2,11 +2,14 @@
 #include <iostream>
 #include <array>
 
-// Input parameters: move these out later
 const double time_step = 0.1;
 // parameter that governs the extent to which differences in reported number
 // of sexual partners between males and females is male (1) or female (0) driven
 const double theta = 0.5;
+
+// used in addBirths
+const double nncirc_prop = 0.1; // Proportion of births that are circumcised
+const double propMale = 0.5; // Proportion of births that are male.
 
 
 const int pop_cols = 13;

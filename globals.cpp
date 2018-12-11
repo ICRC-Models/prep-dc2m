@@ -8,6 +8,7 @@ double popCount[nHIV][nAge][nMale][nRisk][nCD4][nVl][nCirc][nPrep][nCondom][nArt
 double popDiff[nHIV][nAge][nMale][nRisk][nCD4][nVl][nCirc][nPrep][nCondom][nArt] = {0};
 
 void initPop(std::string filename){
+    // populate popCount table from csv file input
     int countInd = 10;
     // read in pop from csv output from R, massage into our new format
     Eigen::MatrixXd csvPop = readCSV(filename, pop_cols, pop_rows);

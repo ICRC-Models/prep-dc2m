@@ -176,11 +176,22 @@ class TestCSVs(unittest.TestCase):
 
     def test_distributeART2(self):
 
-        ## fileBaseNames = ["mixing_matrix", "transmit"]
+        # fileBaseNames = ["mixing_matrix", "transmit"]
         ## precisionPlaces = [7, 7]
         precision = 7
         fileBase = "distributeART"
-        timeStep = 409
+        timeStep = 0
+        rFile = fileBase + "_" + str(timeStep) + ".out"
+        cFile = fileBase + "_" + str(timeStep) + ".cout"
+        self.generic_test(rFile, cFile, precision)
+
+    def test_distributeCondoms2(self):
+
+        ## fileBaseNames = ["mixing_matrix", "transmit"]
+        ## precisionPlaces = [7, 7]
+        precision = 7
+        fileBase = "distributeCondoms"
+        timeStep = 0
         rFile = fileBase + "_" + str(timeStep) + ".out"
         cFile = fileBase + "_" + str(timeStep) + ".cout"
         self.generic_test(rFile, cFile, precision)
