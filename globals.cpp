@@ -33,11 +33,8 @@ void initPop(std::string filename){
 }
 
 void writePop(std::string filename, int timeStep = 0){
-    // do we need to hack in a diff column here? i think so
-    // but it seems diff only appears after loop 0 which makes
-    // some sense i guess?
     bool printFirst = true;
-    double popVal;
+    double popVal, diffVal;
     std::ofstream file(filename);
     // order of loop here matches order saved in rscript
     for (int hiv : hivBins){
@@ -61,10 +58,13 @@ void writePop(std::string filename, int timeStep = 0){
                                             file << condom << ",";
                                             file << art << ",";
                                             popVal = popCount[hiv][age][male][risk][cd4][vl][circ][prep][condom][art];
+                                            diffVal = popDiff[hiv][age][male][risk][cd4][vl][circ][prep][condom][art];
                                             std::stringstream popValStr;
                                             popValStr << std::fixed << std::setprecision(20) << popVal;
+                                            std::stringstream diffValStr;
+                                            diffValStr << std::fixed << std::setprecision(20) << diffVal;
                                             // \n means new line
-                                            file << popValStr.str() << "," << timeStep << "\n";
+                                            file << popValStr.str() << "," << diffVal.str() << "," << timeStep << "\n";
                                         }
                                     }
                                 }
