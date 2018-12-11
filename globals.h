@@ -16,6 +16,7 @@ const int pop_cols = 13;
 const int pop_rows = 82944;
 
 // compartmental indices for pop frame. order is important
+// these are so far unused...
 const int hivInd = 0;
 const int ageInd = 1;
 const int maleInd = 2;
@@ -39,7 +40,7 @@ const int nPrep = 2;
 const int nCondom = 2;
 const int nArt = 2;
 
-// useful iterators (could use iota to construct from n* but whatever)
+// useful iterators (could use iota to construct from n* sizes above but whatever)
 const std::array<int, nHIV> hivBins = {0,1};
 const std::array<int, nAge> ageBins = {0,1,2,3,4,5,6,7,8,9,10,11};
 const std::array<int, nMale> maleBins = {0,1};
@@ -51,14 +52,15 @@ const std::array<int, nPrep> prepBins = {0,1};
 const std::array<int, nCondom> condomBins = {0,1};
 const std::array<int, nArt> artBins = {0,1};
 
-
+// set in globals.cpp
+// these are the index definitions!
 extern double popCount[nHIV][nAge][nMale][nRisk][nCD4][nVl][nCirc][nPrep][nCondom][nArt];
 extern double popDiff[nHIV][nAge][nMale][nRisk][nCD4][nVl][nCirc][nPrep][nCondom][nArt];
 
 void initPop(std::string filename);
 void writePop(std::string filename, int timeStep);
 
-// write a pop iterator?
+// write a pop iterator?, with fixable indices?
 
 
 

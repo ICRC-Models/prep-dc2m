@@ -196,6 +196,17 @@ class TestCSVs(unittest.TestCase):
         cFile = fileBase + "_" + str(timeStep) + ".cout"
         self.generic_test(rFile, cFile, precision)
 
+    def test_addBirths2(self):
+
+        ## fileBaseNames = ["mixing_matrix", "transmit"]
+        ## precisionPlaces = [7, 7]
+        precision = 7
+        fileBase = "addBirths"
+        timeStep = 0
+        rFile = fileBase + "_" + str(timeStep) + ".out"
+        cFile = fileBase + "_" + str(timeStep) + ".cout"
+        self.generic_test(rFile, cFile, precision)
+
 if __name__ == '__main__':
     unittest.main()
 

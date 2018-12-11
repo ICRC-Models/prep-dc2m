@@ -45,25 +45,6 @@ void addBirths(int time_index){
     	}
     }
 
-
-    // Find female and baby indicators in pop - is push_back slow? We know in
-    // advance how many indicators have male == 0
-    std::vector<int> maleInds0;
-    std::vector<int> ageInds0;
-    for (int ii = 0; ii<nPopRows; ii++){
-    	// Check if male
-        if (pop(ii, maleInd) == 0){
-
-            maleInds0.push_back(ii);
-        }
-
-        // Check if baby
-        if (pop(ii, ageInd) == 1){
-
-            ageInds0.push_back(ii);
-        }
-    }
-
 	// Calculate total birhts from HIV- and HIV+ mothers by multiplying gamma
     // in fert by count. Should only operate on women
 
@@ -82,12 +63,12 @@ void addBirths(int time_index){
                             for (int prep : prepBins){
                                 for (int condom : condomBins){
                                     for (int art : artBins){
-                                        gamma = fert[iage][icd4][iart];
+                                        gamma = fert[age][cd4][art];
                                         count = popCount[hiv][age][male][risk][cd4][vl][circ][prep][condom][art];
                                         if (hiv==0 || art ==1){
                                             births_from_neg += gamma*count;
                                         }
-                                        else{
+                                        else {
                                             births_from_pos += gamma*count;
                                         }
                                     }
@@ -105,13 +86,13 @@ void addBirths(int time_index){
 
     // Distribute births into pop table
     // For use in the loop
-    double riskProp;
+    double riskProp, diff, mult;
 
     // Births are only allocated into these compartments.
     int prep = 0;
     int condom = 0;
     int art = 0;
-    int age = 1; // baby
+    int age = 0; // baby (should this be 0, the first compartment?)
 
     for (int hiv : hivBins){
         for (int male : maleBins){
@@ -119,8 +100,8 @@ void addBirths(int time_index){
                 for (int cd4 : cd4Bins){
                     for (int vl : vlBins){
                         for (int circ : circBins){
-                            double diff = 0;
-                            double mult = 1;
+                            diff = 0;
+                            mult = 1;
                             // Find proportion of births going into this risk group
                             riskProp = risk_props_mat(male * nRisk + risk, risk_prop_ind);
                             mult = mult * riskProp;
@@ -154,7 +135,6 @@ void addBirths(int time_index){
                                     diff = pos_births * mult;
                                 }
                             }
-
                             // Add to diff column of pop
                             popDiff[hiv][age][male][risk][cd4][vl][circ][prep][condom][art] += diff;
                         }
@@ -168,14 +148,24 @@ void addBirths(int time_index){
 
 
 // clang++ -O3 -std=c++11 -g addBirths.cpp csvUtil.cpp globals.cpp
-// int main(){
-//
-//     clock_t tStart;
-//     clock_t tEnd;
-//     Eigen::MatrixXd pop = readCSV("distributeCondoms.out", pop_cols, pop_rows);
-//     tStart = clock();
-//     addBirths(pop, 409);
-//     tEnd = clock();
-//     std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
-//     writeCSV(pop, "addBirths.cout");
-// }
+int main(){
+
+    int timeIndex = 0;
+    clock_t tStart;
+    clock_t tEnd;
+    initPop("distributeCondoms_0.out");
+    tStart = clock();
+
+    addBirths(timeIndex); //0 based
+
+    tEnd = clock();
+    std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+
+    std::stringstream filename;
+    filename << "addBirths_" << timeIndex << ".cout";
+
+    writePop(filename.str(), timeIndex);
+    return 0;
+
+
+}

@@ -15,11 +15,8 @@ Eigen::MatrixXd art_cov = readCSV("art_cov.csv", art_cols, art_rows);
 
 
 void distributeART(int time_index){
-    // load parameters
 
     Eigen::VectorXd art_cov_row = art_cov.row(time_index);
-    // std::cout << "cov row " << art_cov_row << std::endl;
-    // std::cout << art_cov_row << std::endl;
 
     double prop[nCD4][nArt];
     for(int ii=0; ii<nCD4; ii++){

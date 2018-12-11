@@ -64,7 +64,7 @@ void writePop(std::string filename, int timeStep = 0){
                                             std::stringstream diffValStr;
                                             diffValStr << std::fixed << std::setprecision(20) << diffVal;
                                             // \n means new line
-                                            file << popValStr.str() << "," << diffVal.str() << "," << timeStep << "\n";
+                                            file << popValStr.str() << "," << diffValStr.str() << "," << timeStep << "\n";
                                         }
                                     }
                                 }
