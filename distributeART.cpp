@@ -5,7 +5,6 @@
 #include "csvUtil.h"
 #include "globals.h"
 
-// clang++ -O3 -std=c++11 -g distributeArt.cpp csvUtil.cpp globals.cpp
 //
 
 int art_cols = 5;
@@ -67,21 +66,23 @@ void distributeART(int time_index){
 
 
 
-// int main(){
-//     int timeIndex = 0;
-//     clock_t tStart;
-//     clock_t tEnd;
-//     initPop("pop_0.out");
-//     tStart = clock();
 
-//     distributeART(timeIndex); //0 based
+// clang++ -O3 -std=c++11 -g distributeArt.cpp csvUtil.cpp globals.cpp
+int main(){
+    int timeIndex = 0;
+    clock_t tStart;
+    clock_t tEnd;
+    initPop("pop_0.out");
+    tStart = clock();
 
-//     tEnd = clock();
-//     std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+    distributeART(timeIndex); //0 based
 
-//     std::stringstream filename;
-//     filename << "distributeART_" << timeIndex << ".cout";
+    tEnd = clock();
+    std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
-//     writePop(filename.str(), timeIndex);
-//     return 0;
-// }
+    std::stringstream filename;
+    filename << "distributeART_" << timeIndex << ".cout";
+
+    writePop(filename.str(), timeIndex);
+    return 0;
+}

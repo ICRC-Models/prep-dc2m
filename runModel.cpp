@@ -22,74 +22,78 @@ void riskAdjust();
 
 int main() {
 
-	// Parameters
+	initPop("pop_0.out");
 	int nSteps = 410;
-
-
-    clock_t tStart;
-    clock_t tEnd;
-
-    initPop("pop_0.out");
-
-    std::cout << "Starting Loop..." << std::endl;
-
-    char buffer[50];
-
-	// Save final pop
-	// int nPopRows = pop.rows();
+	char buffer[50];
 	int timeInd = 12;
 
-	tStart = clock();
 
-	// Loop over time steps
-	for(int timeIndex = 0; timeIndex < nSteps; timeIndex++) {
 
-		// for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
+	for (int iter=0; iter < 100; iter++){
+		// Parameters
 
-		// 	pop(rowInd, timeInd) = timeIndex;
 
-		// }
+	    // clock_t tStart;
+	    // clock_t tEnd;
 
-		distributeART(timeIndex);
 
-		distributeCondoms(timeIndex);
+	    // std::cout << "Starting Loop..." << std::endl;
 
-		addBirths(timeIndex);
 
-		subtractDeaths(timeIndex);
 
-		agePop();
+		// Save final pop
+		// int nPopRows = pop.rows();
 
-		progressDisease();
+		// tStart = clock();
 
-		calcMixMat(timeIndex);
+		// Loop over time steps
+		for(int timeIndex = 0; timeIndex < nSteps; timeIndex++) {
 
-		adjustPartnerships();
+			// for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
 
-		calcLambda();
+			// 	pop(rowInd, timeInd) = timeIndex;
 
-		transmit();
+			// }
 
-		// endPop();
+			distributeART(timeIndex);
 
-		riskAdjust();
+			distributeCondoms(timeIndex);
 
-		// sprintf(buffer, "pop_%i.cout", timeIndex);
-		// writeCSV(buffer);
+			addBirths(timeIndex);
 
+			subtractDeaths(timeIndex);
+
+			agePop();
+
+			progressDisease();
+
+			calcMixMat(timeIndex);
+
+			adjustPartnerships();
+
+			calcLambda();
+
+			transmit();
+
+			// endPop();
+
+			riskAdjust();
+
+			// sprintf(buffer, "pop_%i.cout", timeIndex);
+			// writeCSV(buffer);
+
+
+
+		}
+
+		// tEnd = clock();
+
+		// std::cout << "Loop Finished." << std::endl;
+		// std::cout << nSteps << " steps took " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
 
 	}
 
-	tEnd = clock();
-
-	std::cout << "Loop Finished." << std::endl;
-	std::cout << nSteps << " steps took " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
-
-
-
 	writePop("pop_final.cout", timeInd);
-
-
 }
 

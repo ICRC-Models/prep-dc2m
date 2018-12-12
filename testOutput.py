@@ -246,6 +246,40 @@ class TestCSVs(unittest.TestCase):
         cFile = fileBase + "_" + str(timeStep) + ".cout"
         self.generic_test(rFile, cFile, precision)
 
+    def test_mix2(self):
+        precision = 7
+        fileBase = "mixing_matrix"
+        timeStep = 0
+        rFile = fileBase + "_" + str(timeStep) + ".out"
+        cFile = fileBase + "_" + str(timeStep) + ".cout"
+        self.generic_test(rFile, cFile, precision)
+
+    def test_partners2(self):
+        precision = 7
+        fileBase = "adjusted_partners"
+        timeStep = 0
+        rFile = fileBase + "_" + str(timeStep) + ".out"
+        cFile = fileBase + "_" + str(timeStep) + ".cout"
+        self.generic_test(rFile, cFile, precision)
+
+    def test_lambda2(self):
+        precision = 7
+        fileBase = "lambda_mat"
+        timeStep = 0
+        rFile = fileBase + "_" + str(timeStep) + ".out"
+        cFile = fileBase + "_" + str(timeStep) + ".cout"
+        self.generic_test(rFile, cFile, precision)
+
+    def test_endPop2(self):
+        ## fileBaseNames = ["mixing_matrix", "transmit"]
+        ## precisionPlaces = [7, 7]
+        precision = 7
+        fileBase = "endPop"
+        timeStep = 0
+        rFile = fileBase + "_" + str(timeStep) + ".out"
+        cFile = fileBase + "_" + str(timeStep) + ".cout"
+        self.generic_test(rFile, cFile, precision)
+
     def test_risk2(self):
         ## fileBaseNames = ["mixing_matrix", "transmit"]
         ## precisionPlaces = [7, 7]
@@ -255,6 +289,8 @@ class TestCSVs(unittest.TestCase):
         rFile = fileBase + "_" + str(timeStep) + ".out"
         cFile = fileBase + "_" + str(timeStep) + ".cout"
         self.generic_test(rFile, cFile, precision)
+
+
 
 if __name__ == '__main__':
     unittest.main()

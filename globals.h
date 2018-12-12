@@ -63,8 +63,17 @@ const std::array<int, nArt> artBins = {0,1};
 extern double popCount[nHIV][nAge][nMale][nRisk][nCD4][nVl][nCirc][nPrep][nCondom][nArt];
 extern double popDiff[nHIV][nAge][nMale][nRisk][nCD4][nVl][nCirc][nPrep][nCondom][nArt];
 
+// initialized and used in transmit.cpp
+extern double mixMat[nAge][nMale][nRisk][nAge][nMale][nRisk];
+extern double  adjustedPartnersMat[nAge][nMale][nRisk][nAge][nMale][nRisk];
+extern double lambdaMat[nAge][nMale][nRisk];
+
 void initPop(std::string filename);
 void writePop(std::string filename, int timeStep);
+void writeMixMat(int timeStep);
+void writeAdjustedPartnersMat(int timeStep);
+void writeLambdaMat(int timeStep);
+
 
 // write a pop iterator?, with fixable indices?
 

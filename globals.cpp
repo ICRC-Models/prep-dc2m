@@ -38,7 +38,6 @@ void initPop(std::string filename){
 }
 
 void writePop(std::string filename, int timeStep = 0){
-    bool printFirst = true;
     double popVal, diffVal;
     std::ofstream file(filename);
     // order of loop here matches order saved in rscript, for unit testability
@@ -82,5 +81,77 @@ void writePop(std::string filename, int timeStep = 0){
     }
 }
 
+
+void writeMixMat(int timeStep = 0){
+    std::stringstream filename;
+    filename << "mixing_matrix_" << timeStep << ".cout";
+    std::ofstream mixMatOut (filename.str());
+    if(mixMatOut.is_open()){
+        for(int ii = 0; ii < nAge; ii++) {
+            for(int jj = 0; jj < nMale; jj++) {
+                for(int kk = 0; kk < nRisk; kk++) {
+                    for(int ii_p = 0; ii_p < nAge; ii_p++) {
+                        for(int jj_p = 0; jj_p < nMale; jj_p++) {
+                            for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+                                if(jj != jj_p) { // Don't print same-sex mixing, since those rows are dropped from the R output
+                                     mixMatOut << (ii+1) << "," << jj << "," << (kk+1) << "," << (ii_p + 1) << "," << jj_p << "," << (kk_p + 1) << ",";
+                                     mixMatOut << std::fixed << std::setprecision(20) << mixMat[ii][jj][kk][ii_p][jj_p][kk_p] << "\n";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void writeAdjustedPartnersMat(int timeStep){
+    std::stringstream filename;
+    filename << "adjusted_partners_" << timeStep << ".cout";
+    // Output array to match R format - maybe this can be moved into a separate function? Just for unit testing.
+    std::ofstream adjustedPartnersMatOut (filename.str());
+    if(adjustedPartnersMatOut.is_open()){
+        for(int ii = 0; ii < nAge; ii++) {
+            for(int jj = 0; jj < nMale; jj++) {
+                for(int kk = 0; kk < nRisk; kk++) {
+                    for(int ii_p = 0; ii_p < nAge; ii_p++) {
+                        for(int jj_p = 0; jj_p < nMale; jj_p++) {
+                            for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+
+                                if(jj != jj_p) { // Don't print same-sex mixing, since those rows are dropped from the R output
+
+                                 adjustedPartnersMatOut << (ii+1) << "," << jj << "," << (kk+1) << "," << (ii_p + 1) << ","  << (kk_p + 1) << ",";
+                                 adjustedPartnersMatOut << std::fixed << std::setprecision(20) << adjustedPartnersMat[ii][jj][kk][ii_p][jj_p][kk_p] << "\n";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+void writeLambdaMat(int timeStep){
+    std::stringstream filename;
+    filename << "lambda_mat_" << timeStep << ".cout";
+    // Save lambdaMat for comparison to R output
+    std::ofstream lambdaMatOut (filename.str());
+    if(lambdaMatOut.is_open()){
+        for(int ii = 0; ii < nAge; ii++) {
+            for(int jj = 0; jj < nMale; jj++) {
+                for(int kk = 0; kk < nRisk; kk++) {
+
+                 lambdaMatOut << (ii+1) << "," << jj << "," << (kk+1) << ",";
+                 lambdaMatOut << std::fixed << std::setprecision(20) << lambdaMat[ii][jj][kk] << "\n";
+
+                }
+            }
+        }
+    }
+}
 
 

@@ -245,7 +245,7 @@ void calcMixMat(int time_index) {
 	for(int ii : ageBins) {
 		for(int jj : maleBins) {
 			for(int kk : riskBins) {
-				for(int ii_p : ageBins) {  /// cs?????? looping over age twices???? nvm I get it
+				for(int ii_p : ageBins) {
 					for(int jj_p : maleBins) {
 						for(int kk_p : riskBins) {
 
@@ -783,38 +783,41 @@ void transmit() {
 // }
 
 // clang++ -O3 -std=c++11 -g transmit.cpp csvUtil.cpp globals.cpp
-// int main(){
+int main(){
 
-//     int timeIndex = 0;
-//     clock_t tStart;
-//     clock_t tEnd;
-//     initPop("progressDisease_0.out");
+    int timeIndex = 0;
+    clock_t tStart;
+    clock_t tEnd;
+    initPop("progressDisease_0.out");
 
-//     tStart = clock();
-//     calcMixMat(timeIndex); //0 based
-//     tEnd = clock();
-//     std::cout << "calcMix time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
-
-
-//     tStart = clock();
-//     adjustPartnerships(); //0 based
-//     tEnd = clock();
-//     std::cout << "adjustPartnerships time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
-
-//     tStart = clock();
-//     calcLambda(); //0 based
-//     tEnd = clock();
-//     std::cout << "calcLambda time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+    tStart = clock();
+    calcMixMat(timeIndex); //0 based
+    tEnd = clock();
+    std::cout << "calcMix time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
 
-//     tStart = clock();
-//     transmit(); //0 based
-//     tEnd = clock();
-//     std::cout << "transmit time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+    tStart = clock();
+    adjustPartnerships(); //0 based
+    tEnd = clock();
+    std::cout << "adjustPartnerships time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
-//     std::stringstream filename;
-//     filename << "transmit_" << timeIndex << ".cout";
-//     writePop(filename.str(), timeIndex);
-//     return 0;
-// }
+    tStart = clock();
+    calcLambda(); //0 based
+    tEnd = clock();
+    std::cout << "calcLambda time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+
+
+    tStart = clock();
+    transmit(); //0 based
+    tEnd = clock();
+    std::cout << "transmit time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+
+    std::stringstream filename;
+    filename << "transmit_" << timeIndex << ".cout";
+    writePop(filename.str(), timeIndex);
+    writeMixMat(timeIndex);
+    writeAdjustedPartnersMat(timeIndex);
+    writeLambdaMat(timeIndex);
+    return 0;
+}
 
