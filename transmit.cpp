@@ -694,7 +694,8 @@ void transmit() {
 
 										// Influx to HIV-positive population
 										// hiv = 1
-										popDiff[1][age][male][risk][cd4][vl][circ][prep][condom][art] += count * lambda * psi;
+										// Infections are seeded in vl = 1 and cd4 = 1 (zero-indexed). So need to find that row. This would be way easier in an array...
+										popDiff[1][age][male][risk][1][1][circ][prep][condom][art] += count * lambda * psi;
 									}
                                 }
                             }
