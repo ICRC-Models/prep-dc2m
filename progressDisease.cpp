@@ -18,8 +18,8 @@ void progressDisease() {
     double cd4_prog[nMale][nVl-1][nCD4-1] = {0};
     // initialize outside!!!
     for(int ii : maleBins) {
-    	for(int jj : vlBins){
-    		for(int kk : cd4Bins) {
+    	for(int jj = 0; jj < nVl-1; jj++){ // note -1
+    		for(int kk = 0; kk < nCD4-1; kk++) { // note -1
     			int rowInd;
     			rowInd = ii * (nVl - 1)*(nCD4 - 1) + jj * (nCD4-1) + kk;
     			cd4_prog[ii][jj][kk] = dis_prog_mat(rowInd, cd4_durationInd);
@@ -31,8 +31,8 @@ void progressDisease() {
     double vl_prog[nMale][nVl-1][nCD4-1] = {0};
 
     for(int ii : maleBins) {
-    	for(int jj : vlBins){
-    		for(int kk : cd4Bins) {
+    	for(int jj = 0; jj < nVl-1; jj++){ // note -1
+    		for(int kk = 0; kk < nCD4-1; kk++) { // note -1
     			int rowInd;
     			rowInd = ii * (nVl - 1)*(nCD4 - 1) + jj * (nCD4-1) + kk;
     			vl_prog[ii][jj][kk] = dis_prog_mat(rowInd, vl_durationInd);

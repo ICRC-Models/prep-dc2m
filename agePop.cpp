@@ -24,6 +24,8 @@ void agePop() {
                                         for (int age : ageBins){
                                             // influx add from previous count for all age bins but first
                                             // do this before we reset count for the current bin
+                                            // might be better to put loop in the right order and
+                                            // use index + 1 like i did in progress disease
                                             if (age != 0){
                                                 popDiff[hiv][age][male][risk][cd4][vl][circ][prep][condom][art] += 0.2 * time_step * count;
                                             }
