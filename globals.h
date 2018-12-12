@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <array>
+#include <eigen3/Eigen/Dense>
 
 const double time_step = 0.1;
 // parameter that governs the extent to which differences in reported number
@@ -14,6 +15,11 @@ const double propMale = 0.5; // Proportion of births that are male.
 
 const int pop_cols = 13;
 const int pop_rows = 82944;
+
+const int risk_cols = 4;
+const int risk_rows = 72;
+
+extern Eigen::MatrixXd risk_props_mat;
 
 // compartmental indices for pop frame. order is important
 // these are so far unused...

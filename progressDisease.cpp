@@ -67,7 +67,7 @@ void progressDisease() {
                                     // influx
                                     // CD4
                                     if(cd4 < (nCD4 - 1)) {
-                                        // check this allen!!!!
+                                        // check this allen!!!!, seems ok to me.
                                         popDiff[hiv][age][male][risk][cd4+1][vl][circ][prep][condom][art] += count * (1- exp(-time_step/cd4_prog[male][vl-1][cd4-1]));
                                     }
                                     // VL
@@ -89,23 +89,23 @@ void progressDisease() {
 
 
 // clang++ -O3 -std=c++11 -g progressDisease.cpp csvUtil.cpp globals.cpp
-int main(){
+// int main(){
 
-    int timeIndex = 0;
-    clock_t tStart;
-    clock_t tEnd;
-    initPop("agePop_0.out");
-    tStart = clock();
+//     int timeIndex = 0;
+//     clock_t tStart;
+//     clock_t tEnd;
+//     initPop("agePop_0.out");
+//     tStart = clock();
 
-    progressDisease(); //0 based
+//     progressDisease(); //0 based
 
-    tEnd = clock();
-    std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+//     tEnd = clock();
+//     std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
-    std::stringstream filename;
-    filename << "progressDisease_" << timeIndex << ".cout";
+//     std::stringstream filename;
+//     filename << "progressDisease_" << timeIndex << ".cout";
 
-    writePop(filename.str(), timeIndex);
-    return 0;
-}
+//     writePop(filename.str(), timeIndex);
+//     return 0;
+// }
 

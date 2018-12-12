@@ -1,44 +1,42 @@
 #include <iostream>
 #include <time.h>
 #include <eigen3/Eigen/Dense>
+#include "csvUtil.h"
+#include "globals.h"
 
 // prototype -- move to header eventually
-Eigen::MatrixXd readCSV(std::string filename, int cols, int rows);
-void writeCSV(Eigen::MatrixXd matrix, std::string filename);
-void distributeART(Eigen::MatrixXd &pop, int time_index);
-void distributeCondoms(Eigen::MatrixXd &pop, int time_index);
-void addBirths(Eigen::MatrixXd &pop, int time_index);
-void subtractDeaths(Eigen::MatrixXd &pop, int time_index);
-void agePop(Eigen::MatrixXd &pop);
-void progressDisease(Eigen::MatrixXd &pop);
-void calcMixMat(Eigen::MatrixXd &pop, int time_index);
+void distributeART(int time_index);
+void distributeCondoms(int time_index);
+void addBirths(int time_index);
+void subtractDeaths(int time_index);
+void agePop();
+void progressDisease();
+void calcMixMat(int time_index);
 void adjustPartnerships();
-void calcLambda(Eigen::MatrixXd &pop);
-void transmit(Eigen::MatrixXd &pop);
-void endPop(Eigen::MatrixXd &pop);
-void riskAdjust(Eigen::MatrixXd &pop);
+void calcLambda();
+void transmit();
+// void endPop();
+void riskAdjust();
 
+// clang++ -O3 -std=c++11 -g runModel.cpp distributeART.cpp distributeCondoms.cpp addBirths.cpp subtractDeaths.cpp agePop.cpp progressDisease.cpp riskAdjust.cpp transmit.cpp csvUtil.cpp globals.cpp
 
 int main() {
 
 	// Parameters
 	int nSteps = 410;
 
-    int pop_cols = 13;
-    int pop_rows = 82944;
-    Eigen::MatrixXd pop;
 
     clock_t tStart;
     clock_t tEnd;
 
-    pop = readCSV("pop_0.out", pop_cols, pop_rows);
+    initPop("pop_0.out");
 
     std::cout << "Starting Loop..." << std::endl;
 
     char buffer[50];
 
 	// Save final pop
-	int nPopRows = pop.rows();
+	// int nPopRows = pop.rows();
 	int timeInd = 12;
 
 	tStart = clock();
@@ -46,41 +44,41 @@ int main() {
 	// Loop over time steps
 	for(int timeIndex = 0; timeIndex < nSteps; timeIndex++) {
 
-		for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
-		
-			pop(rowInd, timeInd) = timeIndex;
-		
-		}
+		// for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
 
-		distributeART(pop, timeIndex);
+		// 	pop(rowInd, timeInd) = timeIndex;
 
-		distributeCondoms(pop, timeIndex);
+		// }
 
-		addBirths(pop, timeIndex); 
+		distributeART(timeIndex);
 
-		subtractDeaths(pop, timeIndex); 
+		distributeCondoms(timeIndex);
 
-		agePop(pop);
-	
-		progressDisease(pop);
+		addBirths(timeIndex);
 
-		calcMixMat(pop, timeIndex);
+		subtractDeaths(timeIndex);
+
+		agePop();
+
+		progressDisease();
+
+		calcMixMat(timeIndex);
 
 		adjustPartnerships();
 
-		calcLambda(pop);
+		calcLambda();
 
-		transmit(pop);
+		transmit();
 
-		endPop(pop);
+		// endPop();
 
-		riskAdjust(pop);
+		riskAdjust();
 
 		// sprintf(buffer, "pop_%i.cout", timeIndex);
-		// writeCSV(pop, buffer);
+		// writeCSV(buffer);
 
 
-		
+
 	}
 
 	tEnd = clock();
@@ -90,7 +88,7 @@ int main() {
 
 
 
-	writeCSV(pop, "pop_final.cout");
+	writePop("pop_final.cout", timeInd);
 
 
 }

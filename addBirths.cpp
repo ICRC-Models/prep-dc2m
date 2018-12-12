@@ -18,9 +18,7 @@ Eigen::MatrixXd vert_trans_mat = readCSV("vert_trans.csv", vert_cols, vert_rows)
 
 // Risk proportions: needed for distributing births by risk status.
 // Only actually need the first 12 rows but not sure how to read only those ones in.
-int risk_cols = 4;
-int risk_rows = 72;
-Eigen::MatrixXd risk_props_mat = readCSV("risk_props.csv", risk_cols, risk_rows);
+// Eigen::MatrixXd risk_props_mat = readCSV("risk_props.csv", risk_cols, risk_rows);
 const double risk_prop_ind = 0; // Column of risk_mat that contains risk proportions (zero indexed)
 
 

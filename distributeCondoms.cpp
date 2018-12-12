@@ -60,22 +60,22 @@ void distributeCondoms(int time_index){
     }
 }
 
-int main(){
-    // clang++ -O3 -std=c++11 -g distributeCondoms.cpp csvUtil.cpp globals.cpp
-    int timeIndex = 0;
-    clock_t tStart;
-    clock_t tEnd;
-    initPop("distributeART_0.out");
-    tStart = clock();
+// int main(){
+//     // clang++ -O3 -std=c++11 -g distributeCondoms.cpp csvUtil.cpp globals.cpp
+//     int timeIndex = 0;
+//     clock_t tStart;
+//     clock_t tEnd;
+//     initPop("distributeART_0.out");
+//     tStart = clock();
 
-    distributeCondoms(timeIndex); //0 based
+//     distributeCondoms(timeIndex); //0 based
 
-    tEnd = clock();
-    std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+//     tEnd = clock();
+//     std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
-    std::stringstream filename;
-    filename << "distributeCondoms_" << timeIndex << ".cout";
+//     std::stringstream filename;
+//     filename << "distributeCondoms_" << timeIndex << ".cout";
 
-    writePop(filename.str(), timeIndex);
-    return 0;
-}
+//     writePop(filename.str(), timeIndex);
+//     return 0;
+// }

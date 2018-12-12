@@ -5,45 +5,8 @@
 #include <fstream>
 #include <iomanip>
 #include <cmath>
-
-// clang++ -O3 -std=c++11 transmit.cpp csvUtil.cpp
-
-// prototype -- move to header eventually
-Eigen::MatrixXd readCSV(std::string filename, int cols, int rows);
-void writeCSV(Eigen::MatrixXd matrix, std::string filename);
-
-// int pop_cols = 13;
-// int pop_rows = 82944;
-
-const int hivInd = 0;
-const int ageInd = 1;
-const int maleInd = 2;
-const int riskInd = 3;
-const int cd4Ind = 4;
-const int vlInd = 5;
-const int circInd = 6;
-const int prepInd = 7;
-const int condomInd = 8;
-const int artInd = 9;
-const int countInd = 10;
-const int diffInd = 11;
-const int timeInd = 12;
-
-// Constants for pop frame. Maybe we should move these outside later?
-const int nHIV = 2;
-const int nAge = 12;
-const int nMale = 2;
-const int nRisk = 3;
-const int nCD4 = 6; // len of art_cov_row
-const int nVl = 6;
-const int nCirc = 2;
-const int nPrep = 2;
-const int nCondom = 2;
-const int nArt = 2; // art is 0 or 1
-
-// Input parameters: move these out later
-const double time_step = 0.1;
-const double theta = 0.5; // parameter that governs the extent to which differences in reported number of sexual partners between males and females is male (1) or female (0) driven
+#include "csvUtil.h"
+#include "globals.h"
 
 // Mixing matrix: set up as 6D array
 double mixMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
@@ -96,8 +59,7 @@ double psiCondom = 0.78;
 
 char buffer[50]; // For saving output files
 
-void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
-	 const int nPopRows = pop.rows();
+void calcMixMat(int time_index) {
 
 	 // std::cout << "Inside calcMixMat...time_index: " << time_index << std::endl;
 
@@ -141,7 +103,7 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 
 							if((ii == (nAge-1) && ii_p == (nAge-1) && jj == 0) || (ii == 0 && ii_p == 0 && jj == 1)) { // This handles the edge groups (youngest males, oldest females) who can't have age disparate partnerships
 
-								assortMatAgeSex[ii][jj][ii_p][jj_p] = 1; 
+								assortMatAgeSex[ii][jj][ii_p][jj_p] = 1;
 
 							} else {
 
@@ -174,14 +136,14 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 	}
 
 	// Calculate mixing matrix for completely random mixing
-	// Populate partners array 
+	// Populate partners array
 
 	for(int ii = 0; ii < partners_rows; ii++) {
-	
+
 		int iage = partners_mat(ii, 0) - 1;
 		int imale = partners_mat(ii, 1);
 		int irisk =  partners_mat(ii, 2) - 1;
-	
+
 		partners[iage][imale][irisk] = partners_mat(ii, partners_ind) * time_step;
 	}
 
@@ -196,23 +158,53 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 			}
 		}
 	}
-	int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart;
 
-	for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
+	double sum, count;
 
-		double sum = 0; 
+    for (int hiv : hivBins){
+        for (int age : ageBins){
+            for (int male : maleBins){
+                for (int risk : riskBins){
+                    for (int cd4 : cd4Bins){
+                        for (int vl : vlBins){
+                            for (int circ : circBins){
+                                for (int prep : prepBins){
+                                    for (int condom : condomBins){
+                                        for (int art : artBins){
+                                        	count = popCount[hiv][age][male][risk][cd4][vl][circ][prep][condom][art];
+                                        	sum = count * partners[age][male][risk];
+                                            total_partners_sex[male] += sum;
+        									total_partners_sex_age[age][male] += sum;
+											total_partners_sex_age_risk[age][male][risk] += sum;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-        iage = pop(rowInd,ageInd) - 1; // 1 indexed fucker
-        imale = pop(rowInd,maleInd);
-        irisk = pop(rowInd,riskInd) - 1; // 1 indexed fucker
+    // old code below, replaced from above loop
+	// int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart;
 
-        sum = (pop(rowInd, countInd) * partners[iage][imale][irisk]);
+	// for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
 
-        total_partners_sex[imale] += sum;
-        total_partners_sex_age[iage][imale] += sum;
-		total_partners_sex_age_risk[iage][imale][irisk] += sum;
+	// 	double sum = 0;
 
-	}
+ //        iage = pop(rowInd,ageInd) - 1; // 1 indexed fucker
+ //        imale = pop(rowInd,maleInd);
+ //        irisk = pop(rowInd,riskInd) - 1; // 1 indexed fucker
+
+ //        sum = (pop(rowInd, countInd) * partners[iage][imale][irisk]);
+
+ //        total_partners_sex[imale] += sum;
+ //        total_partners_sex_age[iage][imale] += sum;
+	// 	total_partners_sex_age_risk[iage][imale][irisk] += sum;
+
+	// }
 
 	// Proportions
 	// Proportion of partners, by each for each sex (12x2)
@@ -247,15 +239,15 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 	// pr_a = prop_risk_by_age * epsilon + delta_risk * (1-epsilon)
 
 	// prop = pa * pr_a
-	double pr_age; 
-	double pr_risk_given_age; 
+	double pr_age;
+	double pr_risk_given_age;
 
-	for(int ii = 0; ii < nAge; ii++) {
-		for(int jj = 0; jj < nMale; jj++) {
-			for(int kk = 0; kk < nRisk; kk++) {
-				for(int ii_p = 0; ii_p < nAge; ii_p++) {
-					for(int jj_p = 0; jj_p < nMale; jj_p++) {
-						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
+	for(int ii : ageBins) {
+		for(int jj : maleBins) {
+			for(int kk : riskBins) {
+				for(int ii_p : ageBins) {  /// cs?????? looping over age twices???? nvm I get it
+					for(int jj_p : maleBins) {
+						for(int kk_p : riskBins) {
 
 							if(jj != jj_p) { // Only heterosexual mixing allowed
 
@@ -297,7 +289,7 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 
 	// 							if(jj != jj_p) { // Don't print same-sex mixing, since those rows are dropped from the R output
 
-	// 								mixMatOut << (ii+1) << "," << jj << "," << (kk+1) << "," << (ii_p + 1) << "," << jj_p << "," << (kk_p + 1) << ","; 
+	// 								mixMatOut << (ii+1) << "," << jj << "," << (kk+1) << "," << (ii_p + 1) << "," << jj_p << "," << (kk_p + 1) << ",";
 	// 								mixMatOut << std::fixed << std::setprecision(15) << mixMat[ii][jj][kk][ii_p][jj_p][kk_p] << "\n";
 	// 							}
 	// 						}
@@ -308,12 +300,12 @@ void calcMixMat(Eigen::MatrixXd &pop, int time_index) {
 	// 	}
 
 	// }
-	
+
 
 
 }
 
-void adjustPartnerships() { 
+void adjustPartnerships() {
 
 	// Verify that the correct mixing matrix is getting loaded here
 	// std::cout << "Checking input mixing matrix: " << std::endl;
@@ -357,7 +349,7 @@ void adjustPartnerships() {
 	}
 
 
-	// For each partnership type, compare reported number of partners by males and females 
+	// For each partnership type, compare reported number of partners by males and females
 	// Divide male by female to calculate the discrepancy
 	// Populate a discrepancy array (of dim mixMat) that corresponds to male reports/female reports for that partnership combination
 
@@ -443,7 +435,7 @@ void adjustPartnerships() {
 
 	// 							if(jj != jj_p) { // Don't print same-sex mixing, since those rows are dropped from the R output
 
-	// 								adjustedPartnersMatOut << (ii+1) << "," << jj << "," << (kk+1) << "," << (ii_p + 1) << ","  << (kk_p + 1) << ","; 
+	// 								adjustedPartnersMatOut << (ii+1) << "," << jj << "," << (kk+1) << "," << (ii_p + 1) << ","  << (kk_p + 1) << ",";
 	// 								adjustedPartnersMatOut << std::fixed << std::setprecision(15) << adjustedPartnersMat[ii][jj][kk][ii_p][jj_p][kk_p] << "\n";
 	// 							}
 	// 						}
@@ -456,9 +448,8 @@ void adjustPartnerships() {
 	// }
 }
 
-void calcLambda(Eigen::MatrixXd &pop) { 
+void calcLambda() {
 
-	const int nPopRows = pop.rows();
 
 	// Populate transmission risk array by partnership - should be defined outside of the function
 	double betas[nMale][nRisk][nVl][nArt] = {0};
@@ -482,24 +473,53 @@ void calcLambda(Eigen::MatrixXd &pop) {
 	// Calculate total number of people in each age, sex, and risk category
 	double total_age_sex_risk[nAge][nMale][nRisk] = {0};
 
-	for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
+	double count;
 
-		ihiv = pop(rowInd, hivInd);
-        iage = pop(rowInd,ageInd) - 1; // 1 indexed fucker
-        imale = pop(rowInd,maleInd);
-        irisk = pop(rowInd,riskInd) - 1; // 1 indexed fucker
-        ivl = pop(rowInd, vlInd);
-        iart = pop(rowInd, artInd);
-
-        if(ihiv == 1) {
-
-        	total_hivpos_age_sex_risk_vl_art[iage][imale][irisk][ivl][iart] += pop(rowInd, countInd);
-
+    for (int hiv : hivBins){
+        for (int age : ageBins){
+            for (int male : maleBins){
+                for (int risk : riskBins){
+                    for (int cd4 : cd4Bins){
+                        for (int vl : vlBins){
+                            for (int circ : circBins){
+                                for (int prep : prepBins){
+                                    for (int condom : condomBins){
+                                        for (int art : artBins){
+                                        	count = popCount[hiv][age][male][risk][cd4][vl][circ][prep][condom][art];
+                                        	if (hiv == 1){
+                                        		total_hivpos_age_sex_risk_vl_art[age][male][risk][vl][art] += count;
+                                        	}
+                                        	total_age_sex_risk[age][male][risk] += count;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
+    }
 
-        total_age_sex_risk[iage][imale][irisk] += pop(rowInd, countInd);
 
-	}
+	// for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
+
+	// 	ihiv = pop(rowInd, hivInd);
+ //        iage = pop(rowInd,ageInd) - 1; // 1 indexed fucker
+ //        imale = pop(rowInd,maleInd);
+ //        irisk = pop(rowInd,riskInd) - 1; // 1 indexed fucker
+ //        ivl = pop(rowInd, vlInd);
+ //        iart = pop(rowInd, artInd);
+
+ //        if(ihiv == 1) {
+
+ //        	total_hivpos_age_sex_risk_vl_art[iage][imale][irisk][ivl][iart] += pop(rowInd, countInd);
+
+ //        }
+
+ //        total_age_sex_risk[iage][imale][irisk] += pop(rowInd, countInd);
+
+	// }
 
 	// Per-partnership per year transmission risk: weighted average of transmission risk based on counts of HIV+ in each viral load category in each partnership divided by total population (HIV+ and HIV-) in each age/sex/risk category
 	double ppRiskMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
@@ -530,18 +550,18 @@ void calcLambda(Eigen::MatrixXd &pop) {
 
 								// Calculated average per-partnership transmission risk for this partnership category weighted by VL and ART prevalence
 								pp_risk = pp_sum / total_age_sex_risk[ii_p][jj_p][kk_p];
-	
+
 								// Calculate the number of adjusted partnerships for this partnership category
 								adj_parts = mixMat[ii][jj][kk][ii_p][jj_p][kk_p] * adjustedPartnersMat[ii][jj][kk][ii_p][jj_p][kk_p];
-								
-								// Calculate total risk for this partnership category, which combines the per-partnership transmission risk with the number of partnerships 
+
+								// Calculate total risk for this partnership category, which combines the per-partnership transmission risk with the number of partnerships
 								total_risk = 1 - std::pow((1 - pp_risk), adj_parts);
-	
+
 								// Store in ppRiskMat
 								ppRiskMat[ii][jj][kk][ii_p][jj_p][kk_p] = total_risk;
 
 								// if(pp_sum > 0) {
-									
+
 								// 	std::cout << "ii: " << ii << std::endl;
 								// 	std::cout << "jj: " << jj << std::endl;
 								// 	std::cout << "kk: " << kk << std::endl;
@@ -598,9 +618,9 @@ void calcLambda(Eigen::MatrixXd &pop) {
 	// 		for(int jj = 0; jj < nMale; jj++) {
 	// 			for(int kk = 0; kk < nRisk; kk++) {
 
-	// 				lambdaMatOut << (ii+1) << "," << jj << "," << (kk+1) << ","; 
+	// 				lambdaMatOut << (ii+1) << "," << jj << "," << (kk+1) << ",";
 	// 				lambdaMatOut << std::fixed << std::setprecision(15) << lambdaMat[ii][jj][kk] << "\n";
-				
+
 	// 			}
 	// 		}
 	// 	}
@@ -609,32 +629,30 @@ void calcLambda(Eigen::MatrixXd &pop) {
 
 }
 
-void transmit(Eigen::MatrixXd &pop) { 
-
-	const int nPopRows = pop.rows(); // Any way to move this out?
+void transmit() {
 
 	// Create risk reduction array this would be easier to do outside the function
 	double rr[nMale][nCirc][nPrep][nCondom] = {1.0};
-	
+
 	for(int ii = 0; ii < nCirc; ii++) {
 		for(int jj = 0; jj < nCirc; jj++) {
 			for(int kk = 0; kk < nPrep; kk++) {
 				for(int ll = 0; ll < nCondom; ll++) {
-	
+
 					double psi = 1.0;
-	
+
 					if(ii == 1 && jj == 1) { // Risk reduction from circumcision - only for males
-	
+
 						psi *= (1.0 - psiCirc);
 					}
-	
+
 					if(kk == 1) { // Risk reduction from PrEP
-	
+
 						psi *= (1.0 - psiPrEP);
 					}
-	
+
 					if(ll == 1) { // Risk reduction from condom usage
-	
+
 						psi *= (1.0 - psiCondom);
 					}
 
@@ -645,111 +663,158 @@ void transmit(Eigen::MatrixXd &pop) {
 					// }
 
 					// std::cout << "psi: " << psi << std::endl;
-	
+
 				}
 			}
 		}
 	}
 
-	// Loop through pop
-	// For use inside the loop
-	int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart;
-	for (int rowInd = 0; rowInd < nPopRows; rowInd ++){
+	// only care about hiv = 0 it seems
+	double count, lambda, psi;
+	int hiv = 0;
+    for (int age : ageBins){
+        for (int male : maleBins){
+            for (int risk : riskBins){
+                for (int cd4 : cd4Bins){
+                    for (int vl : vlBins){
+                        for (int circ : circBins){
+                            for (int prep : prepBins){
+                                for (int condom : condomBins){
+                                    for (int art : artBins){
+	                                    count = popCount[hiv][age][male][risk][cd4][vl][circ][prep][condom][art];
+										// Find lambda
+										lambda = lambdaMat[age][male][risk];
 
-	    ihiv = pop(rowInd, hivInd);
-	    iage = pop(rowInd, ageInd) - 1; // 1 indexed fucker
-	    imale = pop(rowInd, maleInd);
-	    irisk = pop(rowInd, riskInd) - 1; // 1 indexed fucker
-	    icd4 = pop(rowInd, cd4Ind);
-	    ivl = pop(rowInd, vlInd);
-	    icirc = pop(rowInd, circInd);
-	    iprep = pop(rowInd, prepInd);
-	    icondom = pop(rowInd, condomInd);
-	    iart = pop(rowInd, artInd);
-
-	    // std::cout << "ihiv: " << ihiv << std::endl;
-	    // std::cout << "iage: " << iage << std::endl;
-	    // std::cout << "imale: " << imale << std::endl;
-	    // std::cout << "irisk: " << irisk << std::endl;
-	    // std::cout << "icd4: " << icd4 << std::endl;
+										// Find psi
+										psi = rr[male][circ][prep][condom];
 
 
+										// Efflux from HIV-negative population
+										popDiff[hiv][age][male][risk][cd4][vl][circ][prep][condom][art] -= count * lambda * psi;
 
-	    int rowInd_hivpos;
-	    double lambda;
-	    double psi = 1.0;
-
-		if(ihiv == 0) {
-
-
-			// Find lambda
-			lambda = lambdaMat[iage][imale][irisk];
-
-			if(lambda < 1e-11) {
-
-				std::cout << "lambda: " << lambda << std::endl;
-
-			}
-			
-
-			// Find psi
-			psi = rr[imale][icirc][iprep][icondom];
-
-			if(psi < 1e-5) {
-
-				std::cout << "psi: " << psi << std::endl;
-
-			}
-			
-
-
-			// Efflux from HIV-negative population
-			pop(rowInd, diffInd) -= (pop(rowInd, countInd) * lambda * psi);
-
-			// Influx to HIV-positive population
-			// Find corresponding rowIndex for HIV+ compartment
-			rowInd_hivpos = rowInd + nAge * nMale * nRisk * nCD4 * nVl * nCirc * nCondom * nPrep * nArt;
-
-			// Infections are seeded in vl = 1 and cd4 = 1 (zero-indexed). So need to find that row. This would be way easier in an array...
-			int cd4_leap = nVl * nCirc * nCondom * nPrep * nArt; // Leap for each CD4 count category
-			int vl_leap = nCirc * nCondom * nPrep * nArt; // Leap for each VL category
-
-			rowInd_hivpos -= (icd4 - 1) * cd4_leap; // Adjust CD4
-			rowInd_hivpos -= (ivl - 1) * vl_leap; // Adjust VL
-
-			pop(rowInd_hivpos, diffInd) += (pop(rowInd, countInd) * lambda * psi);
-
-
-		}   
-	}
-
-
+										// Influx to HIV-positive population
+										// hiv = 1
+										popDiff[1][age][male][risk][cd4][vl][circ][prep][condom][art] += count * lambda * psi;
+									}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 
+	// // Loop through pop
+	// // For use inside the loop
+	// int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart;
+	// for (int rowInd = 0; rowInd < nPopRows; rowInd ++){
 
+	//     ihiv = pop(rowInd, hivInd);
+	//     iage = pop(rowInd, ageInd) - 1; // 1 indexed fucker
+	//     imale = pop(rowInd, maleInd);
+	//     irisk = pop(rowInd, riskInd) - 1; // 1 indexed fucker
+	//     icd4 = pop(rowInd, cd4Ind);
+	//     ivl = pop(rowInd, vlInd);
+	//     icirc = pop(rowInd, circInd);
+	//     iprep = pop(rowInd, prepInd);
+	//     icondom = pop(rowInd, condomInd);
+	//     iart = pop(rowInd, artInd);
+
+	//     // std::cout << "ihiv: " << ihiv << std::endl;
+	//     // std::cout << "iage: " << iage << std::endl;
+	//     // std::cout << "imale: " << imale << std::endl;
+	//     // std::cout << "irisk: " << irisk << std::endl;
+	//     // std::cout << "icd4: " << icd4 << std::endl;
+
+
+
+	//     int rowInd_hivpos;
+	//     double lambda;
+	//     double psi = 1.0;
+
+	// 	if(ihiv == 0) {
+
+
+	// 		// Find lambda
+	// 		lambda = lambdaMat[iage][imale][irisk];
+
+	// 		if(lambda < 1e-11) {
+
+	// 			std::cout << "lambda: " << lambda << std::endl;
+
+	// 		}
+
+
+	// 		// Find psi
+	// 		psi = rr[imale][icirc][iprep][icondom];
+
+	// 		if(psi < 1e-5) {
+
+	// 			std::cout << "psi: " << psi << std::endl;
+
+	// 		}
+
+
+
+	// 		// Efflux from HIV-negative population
+	// 		pop(rowInd, diffInd) -= (pop(rowInd, countInd) * lambda * psi);
+
+	// 		// Influx to HIV-positive population
+	// 		// Find corresponding rowIndex for HIV+ compartment
+	// 		rowInd_hivpos = rowInd + nAge * nMale * nRisk * nCD4 * nVl * nCirc * nCondom * nPrep * nArt;
+
+	// 		// Infections are seeded in vl = 1 and cd4 = 1 (zero-indexed). So need to find that row. This would be way easier in an array...
+	// 		int cd4_leap = nVl * nCirc * nCondom * nPrep * nArt; // Leap for each CD4 count category
+	// 		int vl_leap = nCirc * nCondom * nPrep * nArt; // Leap for each VL category
+
+	// 		rowInd_hivpos -= (icd4 - 1) * cd4_leap; // Adjust CD4
+	// 		rowInd_hivpos -= (ivl - 1) * vl_leap; // Adjust VL
+
+	// 		pop(rowInd_hivpos, diffInd) += (pop(rowInd, countInd) * lambda * psi);
+
+
+	// 	}
+	// }
+
+
+// }
+
+// clang++ -O3 -std=c++11 -g transmit.cpp csvUtil.cpp globals.cpp
 // int main(){
+
+//     int timeIndex = 0;
 //     clock_t tStart;
 //     clock_t tEnd;
-//     Eigen::MatrixXd pop = readCSV("progressDisease_1.out", pop_cols, pop_rows);
+//     initPop("progressDisease_0.out");
+
 //     tStart = clock();
-//     calcMixMat(pop, 1);
+//     calcMixMat(timeIndex); //0 based
 //     tEnd = clock();
-//     std::cout << "calcMixMat time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
-    
+//     std::cout << "calcMix time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+
+
 //     tStart = clock();
-//     adjustPartnerships();
+//     adjustPartnerships(); //0 based
 //     tEnd = clock();
 //     std::cout << "adjustPartnerships time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
 //     tStart = clock();
-//     calcLambda(pop);
+//     calcLambda(); //0 based
 //     tEnd = clock();
 //     std::cout << "calcLambda time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
+
 //     tStart = clock();
-//     transmit(pop);
+//     transmit(); //0 based
 //     tEnd = clock();
 //     std::cout << "transmit time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
-//    	writeCSV(pop, "transmit_test.cout");
+
+//     std::stringstream filename;
+//     filename << "transmit_" << timeIndex << ".cout";
+//     writePop(filename.str(), timeIndex);
+//     return 0;
 // }
+
