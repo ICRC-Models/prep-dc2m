@@ -8,16 +8,18 @@ double popCount[nHIV][nAge][nMale][nRisk][nCD4][nVl][nCirc][nPrep][nCondom][nArt
 double popDiff[nHIV][nAge][nMale][nRisk][nCD4][nVl][nCirc][nPrep][nCondom][nArt] = {0};
 
 void initPop(std::string filename){
-    // populate popCount table from csv file input
+    // populate popCount/Diff table from csv file input
     int countInd = 10;
+    int diffInd = 11;
     // read in pop from csv output from R, massage into our new format
     Eigen::MatrixXd csvPop = readCSV(filename, pop_cols, pop_rows);
     // sum over all rows in pop
-    double count;
+    double count,diff;
     int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart;
 
     for (int ii=0; ii<pop_rows; ii++){
         count = csvPop(ii,countInd);
+        diff = csvPop(ii, diffInd);
         ihiv = csvPop(ii,hivInd);
         iage = csvPop(ii,ageInd) - 1; // 1 indexed fucker
         imale = csvPop(ii,maleInd);
@@ -29,6 +31,7 @@ void initPop(std::string filename){
         icondom = csvPop(ii,condomInd);
         iart = csvPop(ii, artInd);
         popCount[ihiv][iage][imale][irisk][icd4][ivl][icirc][iprep][icondom][iart] = count;
+        popDiff[ihiv][iage][imale][irisk][icd4][ivl][icirc][iprep][icondom][iart] = diff;
     }
 }
 
@@ -36,7 +39,7 @@ void writePop(std::string filename, int timeStep = 0){
     bool printFirst = true;
     double popVal, diffVal;
     std::ofstream file(filename);
-    // order of loop here matches order saved in rscript
+    // order of loop here matches order saved in rscript, for unit testability
     for (int hiv : hivBins){
         for (int age : ageBins){
             for (int male : maleBins){

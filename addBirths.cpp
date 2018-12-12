@@ -31,18 +31,19 @@ void addBirths(int time_index){
     // std::cout << "vert_trans: " << vert_trans << std::endl;
 
     // Set up fert array - ignore male column. Notice this reorders with respect to R output
+    // we should move this outside so it is only created once!
     double fert[nAge][nCD4][nArt] = {0};
     int rowInd;
 
-    for(int ii = 0; ii < nAge; ii++) {
-    	for(int jj = 0; jj < nCD4; jj++){
-    		for(int kk = 0; kk < nArt; kk++) {
-    			rowInd = ii * (nCD4*nArt) + jj * nArt + kk;
+    for (int ii : ageBins){
+        for(int jj : cd4Bins){
+            for(int kk : artBins){
+                rowInd = ii * (nCD4*nArt) + jj * nArt + kk;
                 // This line requires fert_mat to be ordered by age, cd4, and ART status.
-    			fert[ii][jj][kk] = fert_mat(rowInd, gammaInd);
-    		}
+                fert[ii][jj][kk] = fert_mat(rowInd, gammaInd);
+            }
 
-    	}
+        }
     }
 
 	// Calculate total birhts from HIV- and HIV+ mothers by multiplying gamma
@@ -65,7 +66,7 @@ void addBirths(int time_index){
                                     for (int art : artBins){
                                         gamma = fert[age][cd4][art];
                                         count = popCount[hiv][age][male][risk][cd4][vl][circ][prep][condom][art];
-                                        if (hiv==0 || art ==1){
+                                        if (hiv==0 || art==1){
                                             births_from_neg += gamma*count;
                                         }
                                         else {
@@ -148,24 +149,24 @@ void addBirths(int time_index){
 
 
 // clang++ -O3 -std=c++11 -g addBirths.cpp csvUtil.cpp globals.cpp
-int main(){
+// int main(){
 
-    int timeIndex = 0;
-    clock_t tStart;
-    clock_t tEnd;
-    initPop("distributeCondoms_0.out");
-    tStart = clock();
+//     int timeIndex = 0;
+//     clock_t tStart;
+//     clock_t tEnd;
+//     initPop("distributeCondoms_0.out");
+//     tStart = clock();
 
-    addBirths(timeIndex); //0 based
+//     addBirths(timeIndex); //0 based
 
-    tEnd = clock();
-    std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+//     tEnd = clock();
+//     std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
-    std::stringstream filename;
-    filename << "addBirths_" << timeIndex << ".cout";
+//     std::stringstream filename;
+//     filename << "addBirths_" << timeIndex << ".cout";
 
-    writePop(filename.str(), timeIndex);
-    return 0;
+//     writePop(filename.str(), timeIndex);
+//     return 0;
 
 
-}
+// }
