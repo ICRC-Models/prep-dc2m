@@ -68,6 +68,7 @@ int main() {
 		filename.str("");
 		filename.clear();
 
+
 		subtractDeaths(timeIndex);
 		filename << "subtractDeaths_" << timeIndex << ".cout";
 		writePop(filename.str(), timeIndex);
