@@ -31,7 +31,7 @@ void addBirths(int time_index){
     // std::cout << "vert_trans: " << vert_trans << std::endl;
 
     // Set up fert array - ignore male column. Notice this reorders with respect to R output
-    // we should move this outside so it is only created once!
+    // move this guy out!
     double fert[nAge][nCD4][nArt] = {0};
     int rowInd;
 

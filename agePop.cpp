@@ -1,95 +1,66 @@
 #include <iostream>
 #include <vector>
 #include <time.h>
-#include <eigen3/Eigen/Dense>
+#include "csvUtil.h"
+#include "globals.h"
 
-// clang++ -O3 -std=c++11 agePop.cpp csvUtil.cpp
+void agePop() {
 
-// prototype -- move to header eventually
-Eigen::MatrixXd readCSV(std::string filename, int cols, int rows);
-void writeCSV(Eigen::MatrixXd matrix, std::string filename);
+    double diff, count;
 
-// int pop_cols = 13;
-// int pop_rows = 82944;
-
-const double time_step = 0.1; // This needs to be moved out at some point - other functions also rely on it.
-
-const int hivInd = 0;
-const int ageInd = 1;
-const int maleInd = 2;
-const int riskInd = 3;
-const int cd4Ind = 4;
-const int vlInd = 5;
-const int circInd = 6;
-const int prepInd = 7;
-const int condomInd = 8;
-const int artInd = 9;
-const int countInd = 10;
-const int diffInd = 11;
-const int timeInd = 12;
-
-
-void agePop(Eigen::MatrixXd &pop) {
-
-	const int nHIV = 2;
-    const int nAge = 12;
-    const int nMale = 2;
-    const int nRisk = 3;
-    const int nCD4 = 6; // len of art_cov_row
-    const int nVl = 6;
-    const int nCirc = 2;
-    const int nPrep = 2;
-    const int nCondom = 2;
-    const int nArt = 2; // art is 0 or 1
-    const int nPopRows = pop.rows();
-
-	// For use inside the loop
-	int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart;
-
-	for (int rowInd = 0; rowInd < nPopRows; rowInd ++){
-
-	    ihiv = pop(rowInd, hivInd);
-	    iage = pop(rowInd, ageInd) - 1; // 1 indexed fucker
-	    imale = pop(rowInd, maleInd);
-	    irisk = pop(rowInd, riskInd) - 1; // 1 indexed fucker
-	    icd4 = pop(rowInd, cd4Ind);
-	    ivl = pop(rowInd, vlInd);
-	    icirc = pop(rowInd, circInd);
-	    iprep = pop(rowInd, prepInd);
-	    icondom = pop(rowInd, condomInd);
-	    iart = pop(rowInd, artInd);
-
-	    int rowInd_plus_one;
-
-	    // Efflux: aging out of the compartment. 1/5 of 5-year age groups leave each compartment
-	    pop(rowInd, diffInd) -= (0.2 * time_step) * pop(rowInd, countInd);
-
-	    //Influx: add this to compartment of one year older (for all but the last age group). This seems easier in an arrayy
-	    rowInd_plus_one = rowInd + nMale*nRisk*nCD4*nVl*nCirc*nCondom*nPrep*nArt;
-
-	    if(iage < (nAge - 1)) {
-
-	    	//std::cout << "iage: " << iage << std::endl;
-	    	//std::cout << "rowInd: " << rowInd << std::endl;
-	    	//std::cout << "rowInd plus one: " << rowInd_plus_one << std::endl;
-
-	    	pop(rowInd_plus_one, diffInd) += 0.2 * time_step * pop(rowInd, countInd);
-
-	   
-	     }
-	}
-
-	// std::cout << "head: pop" << pop.block(0,0, 10, 13) << std::endl;
+    // loop over age last to
+    // get motion between compartments right?
+    // not efficient to loop this way
+    // but more readable
+    for (int hiv : hivBins){
+        for (int male : maleBins){
+            for (int risk : riskBins){
+                for (int cd4 : cd4Bins){
+                    for (int vl : vlBins){
+                        for (int circ : circBins){
+                            for (int prep : prepBins){
+                                for (int condom : condomBins){
+                                    for (int art : artBins){
+                                        for (int age : ageBins){
+                                            // influx add from previous count for all age bins but first
+                                            // do this before we reset count for the current bin
+                                            if (age != 0){
+                                                popDiff[hiv][age][male][risk][cd4][vl][circ][prep][condom][art] += 0.2 * time_step * count;
+                                            }
+                                            count = popCount[hiv][age][male][risk][cd4][vl][circ][prep][condom][art];
+                                            // Efflux: aging out of the compartment. 1/5 of 5-year age groups leave each compartment
+                                            popDiff[hiv][age][male][risk][cd4][vl][circ][prep][condom][art] -= 0.2 * time_step * count;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 
-// int main() {
-//     clock_t tStart;
-//     clock_t tEnd;
-//     Eigen::MatrixXd pop = readCSV("subtractDeaths.out", pop_cols, pop_rows);
-//     tStart = clock();
-//     agePop(pop);
-//     tEnd = clock();
-//     std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
-//     writeCSV(pop, "agePop.cout");
-// }
+
+// clang++ -O3 -std=c++11 -g agePop.cpp csvUtil.cpp globals.cpp
+int main(){
+
+    int timeIndex = 0;
+    clock_t tStart;
+    clock_t tEnd;
+    initPop("subtractDeaths_0.out");
+    tStart = clock();
+
+    agePop(); //0 based
+
+    tEnd = clock();
+    std::cout << "time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+
+    std::stringstream filename;
+    filename << "agePop_" << timeIndex << ".cout";
+
+    writePop(filename.str(), timeIndex);
+    return 0;
+}
