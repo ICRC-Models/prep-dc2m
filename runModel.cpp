@@ -15,84 +15,110 @@ void calcMixMat(int time_index);
 void adjustPartnerships();
 void calcLambda();
 void transmit();
-// void endPop();
+void endPop();
 void riskAdjust();
 
 // clang++ -O3 -std=c++11 -g runModel.cpp distributeART.cpp distributeCondoms.cpp addBirths.cpp subtractDeaths.cpp agePop.cpp progressDisease.cpp riskAdjust.cpp transmit.cpp csvUtil.cpp globals.cpp
 
 int main() {
 
+	// initParams(); // evetually will load up all auxilary csvs
 	initPop("pop_0.out");
 	int nSteps = 410;
 	char buffer[50];
 	int timeInd = 12;
 
+	// Parameters
 
 
-	for (int iter=0; iter < 100; iter++){
-		// Parameters
+    // clock_t tStart;
+    // clock_t tEnd;
 
 
-	    // clock_t tStart;
-	    // clock_t tEnd;
-
-
-	    // std::cout << "Starting Loop..." << std::endl;
+    // std::cout << "Starting Loop..." << std::endl;
 
 
 
-		// Save final pop
-		// int nPopRows = pop.rows();
+	// Save final pop
+	// int nPopRows = pop.rows();
 
-		// tStart = clock();
+	// tStart = clock();
 
-		// Loop over time steps
-		for(int timeIndex = 0; timeIndex < nSteps; timeIndex++) {
+	// Loop over time steps
+	std::stringstream filename;
 
-			// for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
+	for (int timeIndex = 0; timeIndex < nSteps; timeIndex++) {
 
-			// 	pop(rowInd, timeInd) = timeIndex;
+		distributeART(timeIndex);
+		filename << "distributeART_" << timeIndex << ".cout";
+		writePop(filename.str(), timeIndex);
+		filename.str("");
+		filename.clear();
 
-			// }
-
-			distributeART(timeIndex);
-
-			distributeCondoms(timeIndex);
-
-			addBirths(timeIndex);
-
-			subtractDeaths(timeIndex);
-
-			agePop();
-
-			progressDisease();
-
-			calcMixMat(timeIndex);
-
-			adjustPartnerships();
-
-			calcLambda();
-
-			transmit();
-
-			// endPop();
-
-			riskAdjust();
-
-			// sprintf(buffer, "pop_%i.cout", timeIndex);
-			// writeCSV(buffer);
+		distributeCondoms(timeIndex);
+		filename << "distributeCondoms_" << timeIndex << ".cout";
+		writePop(filename.str(), timeIndex);
+		filename.str("");
+		filename.clear();
 
 
+		addBirths(timeIndex);
+		filename << "addBirths_" << timeIndex << ".cout";
+		writePop(filename.str(), timeIndex);
+		filename.str("");
+		filename.clear();
 
-		}
+		subtractDeaths(timeIndex);
+		filename << "subtractDeaths_" << timeIndex << ".cout";
+		writePop(filename.str(), timeIndex);
+		filename.str("");
+		filename.clear();
 
-		// tEnd = clock();
+		agePop();
+		filename << "agePop_" << timeIndex << ".cout";
+		writePop(filename.str(), timeIndex);
+		filename.str("");
+		filename.clear();
 
-		// std::cout << "Loop Finished." << std::endl;
-		// std::cout << nSteps << " steps took " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+		progressDisease();
+		filename << "progressDisease_" << timeIndex << ".cout";
+		writePop(filename.str(), timeIndex);
+		filename.str("");
+		filename.clear();
 
+
+		calcMixMat(timeIndex);
+		adjustPartnerships();
+		calcLambda();
+		transmit();
+
+		writeMixMat(timeIndex);
+		writeAdjustedPartnersMat(timeIndex);
+		writeLambdaMat(timeIndex);
+		filename << "transmit_" << timeIndex << ".cout";
+		writePop(filename.str(), timeIndex);
+		filename.str("");
+		filename.clear();
+
+		endPop();
+		filename << "endPop_" << timeIndex << ".cout";
+		writePop(filename.str(), timeIndex);
+		filename.str("");
+		filename.clear();
+
+		riskAdjust();
+		filename << "riskAdjust_" << timeIndex << ".cout";
+		writePop(filename.str(), timeIndex);
+		filename.str("");
+		filename.clear();
 
 	}
+
+	// tEnd = clock();
+
+	// std::cout << "Loop Finished." << std::endl;
+	// std::cout << nSteps << " steps took " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+
 
 	writePop("pop_final.cout", timeInd);
 }

@@ -12,6 +12,11 @@ const double theta = 0.5;
 const double nncirc_prop = 0.1; // Proportion of births that are circumcised
 const double propMale = 0.5; // Proportion of births that are male.
 
+// used in transmit
+const double psiCirc = 0.60;
+const double psiPrEP = 0.92;
+const double psiCondom = 0.78;
+
 
 const int pop_cols = 13;
 const int pop_rows = 82944;
@@ -74,7 +79,14 @@ void writeMixMat(int timeStep);
 void writeAdjustedPartnersMat(int timeStep);
 void writeLambdaMat(int timeStep);
 
+// declare and initialize all intermediate arrays used in various
+// routines these things will eventually get created by load parameters
+// but for now lets provide an initializatoin funtion
 
+// extern double back_mort[nAge][nMale]; // subtract deaths
+// extern double hiv_mort[nAge][nCD4][nArt]; // subtract deaths
+
+// void initParams();
 // write a pop iterator?, with fixable indices?
 
 

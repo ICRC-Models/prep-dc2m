@@ -100,7 +100,7 @@ pop[risk_props, count := count * prop]
 ## Seed infections - this is currently adding 0.1% of total population to infected groups, but not subtracting them from the susceptible pool.  Need to confirm with Roger
 seedInfections(pop, 0.001)
 
-nsteps = 1
+nsteps = 410
 
 setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
 print("Before the loop")

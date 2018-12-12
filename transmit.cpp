@@ -53,16 +53,18 @@ int transmissionRiskInd = 6; // Column of betas_mat containing transmission risk
 // int rr_rows = 3;
 // Eigen::MatrixXd rr_mat = readCSV("rr_mat.csv", rr_cols, rr_rows);
 // int psiInd = 1; // Column indicator for risk reduction (psi) of intervention
-double psiCirc = 0.60;
-double psiPrEP = 0.92;
-double psiCondom = 0.78;
 
-char buffer[50]; // For saving output files
+// moved to global
+// double psiCirc = 0.60;
+// double psiPrEP = 0.92;
+// double psiCondom = 0.78;
+
 
 void calcMixMat(int time_index) {
 
 	 // std::cout << "Inside calcMixMat...time_index: " << time_index << std::endl;
 
+	// can these be moved outside?
 	double assortMatAgeSex[nAge][nMale][nAge][nMale] = {0};
 	double assortMatRisk[nRisk][nRisk] = {0};
 
@@ -187,25 +189,6 @@ void calcMixMat(int time_index) {
         }
     }
 
-    // old code below, replaced from above loop
-	// int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart;
-
-	// for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
-
-	// 	double sum = 0;
-
- //        iage = pop(rowInd,ageInd) - 1; // 1 indexed fucker
- //        imale = pop(rowInd,maleInd);
- //        irisk = pop(rowInd,riskInd) - 1; // 1 indexed fucker
-
- //        sum = (pop(rowInd, countInd) * partners[iage][imale][irisk]);
-
- //        total_partners_sex[imale] += sum;
- //        total_partners_sex_age[iage][imale] += sum;
-	// 	total_partners_sex_age_risk[iage][imale][irisk] += sum;
-
-	// }
-
 	// Proportions
 	// Proportion of partners, by each for each sex (12x2)
 	double prop_age_by_sex[nAge][nMale] = {0};
@@ -275,34 +258,6 @@ void calcMixMat(int time_index) {
 			}
 		}
 	}
-
-
-	// // Output array to match R format - maybe this can be moved into a separate function? Just for unit testing.
-	// std::ofstream mixMatOut ("mixing_matrix.cout");
-	// if(mixMatOut.is_open()){
-	// 	for(int ii = 0; ii < nAge; ii++) {
-	// 		for(int jj = 0; jj < nMale; jj++) {
-	// 			for(int kk = 0; kk < nRisk; kk++) {
-	// 				for(int ii_p = 0; ii_p < nAge; ii_p++) {
-	// 					for(int jj_p = 0; jj_p < nMale; jj_p++) {
-	// 						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
-
-	// 							if(jj != jj_p) { // Don't print same-sex mixing, since those rows are dropped from the R output
-
-	// 								mixMatOut << (ii+1) << "," << jj << "," << (kk+1) << "," << (ii_p + 1) << "," << jj_p << "," << (kk_p + 1) << ",";
-	// 								mixMatOut << std::fixed << std::setprecision(15) << mixMat[ii][jj][kk][ii_p][jj_p][kk_p] << "\n";
-	// 							}
-	// 						}
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-
-	// }
-
-
-
 }
 
 void adjustPartnerships() {
@@ -422,30 +377,6 @@ void adjustPartnerships() {
 			}
 		}
 	}
-
-	// Output array to match R format - maybe this can be moved into a separate function? Just for unit testing.
-	// std::ofstream adjustedPartnersMatOut ("adjusted_partners.cout");
-	// if(adjustedPartnersMatOut.is_open()){
-	// 	for(int ii = 0; ii < nAge; ii++) {
-	// 		for(int jj = 0; jj < nMale; jj++) {
-	// 			for(int kk = 0; kk < nRisk; kk++) {
-	// 				for(int ii_p = 0; ii_p < nAge; ii_p++) {
-	// 					for(int jj_p = 0; jj_p < nMale; jj_p++) {
-	// 						for(int kk_p = 0; kk_p < nRisk; kk_p++) {
-
-	// 							if(jj != jj_p) { // Don't print same-sex mixing, since those rows are dropped from the R output
-
-	// 								adjustedPartnersMatOut << (ii+1) << "," << jj << "," << (kk+1) << "," << (ii_p + 1) << ","  << (kk_p + 1) << ",";
-	// 								adjustedPartnersMatOut << std::fixed << std::setprecision(15) << adjustedPartnersMat[ii][jj][kk][ii_p][jj_p][kk_p] << "\n";
-	// 							}
-	// 						}
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-
-	// }
 }
 
 void calcLambda() {
@@ -502,25 +433,6 @@ void calcLambda() {
     }
 
 
-	// for(int rowInd = 0; rowInd < nPopRows; rowInd++) {
-
-	// 	ihiv = pop(rowInd, hivInd);
- //        iage = pop(rowInd,ageInd) - 1; // 1 indexed fucker
- //        imale = pop(rowInd,maleInd);
- //        irisk = pop(rowInd,riskInd) - 1; // 1 indexed fucker
- //        ivl = pop(rowInd, vlInd);
- //        iart = pop(rowInd, artInd);
-
- //        if(ihiv == 1) {
-
- //        	total_hivpos_age_sex_risk_vl_art[iage][imale][irisk][ivl][iart] += pop(rowInd, countInd);
-
- //        }
-
- //        total_age_sex_risk[iage][imale][irisk] += pop(rowInd, countInd);
-
-	// }
-
 	// Per-partnership per year transmission risk: weighted average of transmission risk based on counts of HIV+ in each viral load category in each partnership divided by total population (HIV+ and HIV-) in each age/sex/risk category
 	double ppRiskMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
 	double pp_risk, total_risk, adj_parts; // For use in the loop
@@ -560,24 +472,8 @@ void calcLambda() {
 								// Store in ppRiskMat
 								ppRiskMat[ii][jj][kk][ii_p][jj_p][kk_p] = total_risk;
 
-								// if(pp_sum > 0) {
-
-								// 	std::cout << "ii: " << ii << std::endl;
-								// 	std::cout << "jj: " << jj << std::endl;
-								// 	std::cout << "kk: " << kk << std::endl;
-								// 	std::cout << "ii_p: " << ii_p << std::endl;
-								// 	std::cout << "jj_p: " << jj_p << std::endl;
-								// 	std::cout << "kk_p: " << kk_p << std::endl;
-								// 	std::cout << "pp_sum: " << pp_sum << std::endl;
-								// 	std::cout << "pp_risk: " << pp_risk << std::endl;
-								// 	std::cout << "adj_parts: " << adj_parts << std::endl;
-								// 	std::cout << "total_risk: " << total_risk << std::endl;
-
-								// }
-
 
 							}
-
 						}
 					}
 				}
@@ -610,22 +506,6 @@ void calcLambda() {
 		}
 	}
 
-	// Save lambdaMat for comparison to R output
-	// std::ofstream lambdaMatOut ("lambda_mat.cout");
-	// if(lambdaMatOut.is_open()){
-
-	// 	for(int ii = 0; ii < nAge; ii++) {
-	// 		for(int jj = 0; jj < nMale; jj++) {
-	// 			for(int kk = 0; kk < nRisk; kk++) {
-
-	// 				lambdaMatOut << (ii+1) << "," << jj << "," << (kk+1) << ",";
-	// 				lambdaMatOut << std::fixed << std::setprecision(15) << lambdaMat[ii][jj][kk] << "\n";
-
-	// 			}
-	// 		}
-	// 	}
-
-	// }
 
 }
 
@@ -708,117 +588,42 @@ void transmit() {
 }
 
 
-	// // Loop through pop
-	// // For use inside the loop
-	// int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart;
-	// for (int rowInd = 0; rowInd < nPopRows; rowInd ++){
-
-	//     ihiv = pop(rowInd, hivInd);
-	//     iage = pop(rowInd, ageInd) - 1; // 1 indexed fucker
-	//     imale = pop(rowInd, maleInd);
-	//     irisk = pop(rowInd, riskInd) - 1; // 1 indexed fucker
-	//     icd4 = pop(rowInd, cd4Ind);
-	//     ivl = pop(rowInd, vlInd);
-	//     icirc = pop(rowInd, circInd);
-	//     iprep = pop(rowInd, prepInd);
-	//     icondom = pop(rowInd, condomInd);
-	//     iart = pop(rowInd, artInd);
-
-	//     // std::cout << "ihiv: " << ihiv << std::endl;
-	//     // std::cout << "iage: " << iage << std::endl;
-	//     // std::cout << "imale: " << imale << std::endl;
-	//     // std::cout << "irisk: " << irisk << std::endl;
-	//     // std::cout << "icd4: " << icd4 << std::endl;
-
-
-
-	//     int rowInd_hivpos;
-	//     double lambda;
-	//     double psi = 1.0;
-
-	// 	if(ihiv == 0) {
-
-
-	// 		// Find lambda
-	// 		lambda = lambdaMat[iage][imale][irisk];
-
-	// 		if(lambda < 1e-11) {
-
-	// 			std::cout << "lambda: " << lambda << std::endl;
-
-	// 		}
-
-
-	// 		// Find psi
-	// 		psi = rr[imale][icirc][iprep][icondom];
-
-	// 		if(psi < 1e-5) {
-
-	// 			std::cout << "psi: " << psi << std::endl;
-
-	// 		}
-
-
-
-	// 		// Efflux from HIV-negative population
-	// 		pop(rowInd, diffInd) -= (pop(rowInd, countInd) * lambda * psi);
-
-	// 		// Influx to HIV-positive population
-	// 		// Find corresponding rowIndex for HIV+ compartment
-	// 		rowInd_hivpos = rowInd + nAge * nMale * nRisk * nCD4 * nVl * nCirc * nCondom * nPrep * nArt;
-
-	// 		// Infections are seeded in vl = 1 and cd4 = 1 (zero-indexed). So need to find that row. This would be way easier in an array...
-	// 		int cd4_leap = nVl * nCirc * nCondom * nPrep * nArt; // Leap for each CD4 count category
-	// 		int vl_leap = nCirc * nCondom * nPrep * nArt; // Leap for each VL category
-
-	// 		rowInd_hivpos -= (icd4 - 1) * cd4_leap; // Adjust CD4
-	// 		rowInd_hivpos -= (ivl - 1) * vl_leap; // Adjust VL
-
-	// 		pop(rowInd_hivpos, diffInd) += (pop(rowInd, countInd) * lambda * psi);
-
-
-	// 	}
-	// }
-
-
-// }
-
 // clang++ -O3 -std=c++11 -g transmit.cpp csvUtil.cpp globals.cpp
-int main(){
+// int main(){
 
-    int timeIndex = 0;
-    clock_t tStart;
-    clock_t tEnd;
-    initPop("progressDisease_0.out");
+//     int timeIndex = 0;
+//     clock_t tStart;
+//     clock_t tEnd;
+//     initPop("progressDisease_0.out");
 
-    tStart = clock();
-    calcMixMat(timeIndex); //0 based
-    tEnd = clock();
-    std::cout << "calcMix time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
-
-
-    tStart = clock();
-    adjustPartnerships(); //0 based
-    tEnd = clock();
-    std::cout << "adjustPartnerships time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
-
-    tStart = clock();
-    calcLambda(); //0 based
-    tEnd = clock();
-    std::cout << "calcLambda time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+//     tStart = clock();
+//     calcMixMat(timeIndex); //0 based
+//     tEnd = clock();
+//     std::cout << "calcMix time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
 
-    tStart = clock();
-    transmit(); //0 based
-    tEnd = clock();
-    std::cout << "transmit time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+//     tStart = clock();
+//     adjustPartnerships(); //0 based
+//     tEnd = clock();
+//     std::cout << "adjustPartnerships time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
-    std::stringstream filename;
-    filename << "transmit_" << timeIndex << ".cout";
-    writePop(filename.str(), timeIndex);
-    writeMixMat(timeIndex);
-    writeAdjustedPartnersMat(timeIndex);
-    writeLambdaMat(timeIndex);
-    return 0;
-}
+//     tStart = clock();
+//     calcLambda(); //0 based
+//     tEnd = clock();
+//     std::cout << "calcLambda time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+
+
+//     tStart = clock();
+//     transmit(); //0 based
+//     tEnd = clock();
+//     std::cout << "transmit time took: " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+
+//     std::stringstream filename;
+//     filename << "transmit_" << timeIndex << ".cout";
+//     writePop(filename.str(), timeIndex);
+//     writeMixMat(timeIndex);
+//     writeAdjustedPartnersMat(timeIndex);
+//     writeLambdaMat(timeIndex);
+//     return 0;
+// }
 

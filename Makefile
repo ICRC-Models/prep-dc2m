@@ -1,8 +1,8 @@
 CFLAGS = -O3 --std=c++11 -g
 CC = clang++
 
-runModel: distributeART.o distributeCondoms.o addBirths.o subtractDeaths.o agePop.o progressDisease.o transmit.o endPop.o riskAdjust.o csvUtil.o
-	$(CC) $(CFLAGS) -o runModel runModel.cpp distributeART.o distributeCondoms.o addBirths.o subtractDeaths.o agePop.o progressDisease.o transmit.o endPop.o riskAdjust.o csvUtil.o
+runModel: distributeART.o distributeCondoms.o addBirths.o subtractDeaths.o agePop.o progressDisease.o transmit.o endPop.o riskAdjust.o csvUtil.o globals.o
+	$(CC) $(CFLAGS) -o runModel runModel.cpp distributeART.o distributeCondoms.o addBirths.o subtractDeaths.o agePop.o progressDisease.o transmit.o endPop.o riskAdjust.o csvUtil.o globals.o
 
 distributeART.o: distributeART.cpp
 	$(CC) $(CFLAGS) -c distributeART.cpp
@@ -33,6 +33,9 @@ riskAdjust.o: riskAdjust.cpp
 
 csvUtil.o: csvUtil.cpp
 	$(CC) $(CFLAGS) -c csvUtil.cpp
+
+globals.o: globals.cpp
+	$(CC) $(CFLAGS) -c globals.cpp
 
 
 clean:
