@@ -16,7 +16,7 @@ void writeCSV(Eigen::MatrixXd matrix, std::string filename){
 }
 
 // https://gist.github.com/infusion/43bd2aa421790d5b4582
-Eigen::MatrixXd readCSV(std::string filename, int cols, int rows) {
+Eigen::MatrixXd readCSV(std::string filename, int cols, int rows, bool header = false) {
   std::cout.precision(20);
   std::ifstream in(filename);
 
@@ -25,11 +25,18 @@ Eigen::MatrixXd readCSV(std::string filename, int cols, int rows) {
   int row = 0;
   int col = 0;
 
+
   Eigen::MatrixXd res = Eigen::MatrixXd(rows, cols);
 
   if (in.is_open()) {
 
     while (std::getline(in, line)) {
+
+      if(header) {
+
+        header = false;
+        continue;
+      }
 
       char *ptr = (char *) line.c_str();
       int len = line.length();
