@@ -90,6 +90,8 @@ void writeLambdaMat(int timeStep);
 extern double fert[nAge][nCD4][nArt];
 extern double back_mort[nAge][nMale];
 extern double hiv_mort[nAge][nCD4][nArt];
+extern double cd4_prog[nMale][nVl-1][nCD4-1];
+extern double vl_prog[nMale][nVl-1][nCD4-1];
 
 void initParams();
 // write a pop iterator?, with fixable indices?

@@ -22,7 +22,7 @@ void riskAdjust();
 
 int main() {
 
-	// initParams(); // evetually will load up all auxilary csvs
+	initParams(); // evetually will load up all auxilary csvs
 	initPop("pop_0.out");
 	int nSteps = 410;
 	char buffer[50];

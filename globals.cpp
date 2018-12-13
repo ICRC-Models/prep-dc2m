@@ -13,6 +13,8 @@ double popDiff[nHIV][nAge][nMale][nRisk][nCD4][nVl][nCirc][nPrep][nCondom][nArt]
 double fert[nAge][nCD4][nArt] = {0};
 double back_mort[nAge][nMale] = {0};
 double hiv_mort[nAge][nCD4][nArt] = {0};
+double cd4_prog[nMale][nVl-1][nCD4-1] = {0};
+double vl_prog[nMale][nVl-1][nCD4-1] = {0};
 
 
 Eigen::MatrixXd risk_props_mat = readCSV("risk_props.csv", risk_cols, risk_rows);
@@ -209,6 +211,35 @@ void initParams(){
                 rowInd =  ii * nCD4 * nArt + jj * nArt + kk;
                 // This line requires hiv_mort_mat to be ordered by age, cd4, and ART status.
                 hiv_mort[ii][jj][kk] = hiv_mort_mat(rowInd, alphaInd);
+            }
+        }
+    }
+
+    // progress disease
+    // Read in CD4 and VL disease progression parameters
+    int dis_prog_cols = 7;
+    int dis_prog_rows = 50;
+    Eigen::MatrixXd dis_prog_mat = readCSV("dis_prog.csv", dis_prog_cols, dis_prog_rows); // male, vl, cd4, cd4_duration, vl_duration, hiv, art
+    const int cd4_durationInd = 3; // Column of dis_prog_mat that contains mean cd4_duration
+    const int vl_durationInd = 4; // Column of dis_prog_mat that contains mean vl_duration
+
+    for(int ii : maleBins) {
+        for(int jj = 0; jj < nVl-1; jj++){ // note -1
+            for(int kk = 0; kk < nCD4-1; kk++) { // note -1
+                int rowInd;
+                rowInd = ii * (nVl - 1)*(nCD4 - 1) + jj * (nCD4-1) + kk;
+                cd4_prog[ii][jj][kk] = dis_prog_mat(rowInd, cd4_durationInd);
+            }
+
+        }
+    }
+
+    for(int ii : maleBins) {
+        for(int jj = 0; jj < nVl-1; jj++){ // note -1
+            for(int kk = 0; kk < nCD4-1; kk++) { // note -1
+                int rowInd;
+                rowInd = ii * (nVl - 1)*(nCD4 - 1) + jj * (nCD4-1) + kk;
+                vl_prog[ii][jj][kk] = dis_prog_mat(rowInd, vl_durationInd);
             }
         }
     }

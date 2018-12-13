@@ -5,41 +5,8 @@
 #include "csvUtil.h"
 #include "globals.h"
 
-// Read in CD4 and VL disease progression parameters
-int dis_prog_cols = 7;
-int dis_prog_rows = 50;
-Eigen::MatrixXd dis_prog_mat = readCSV("dis_prog.csv", dis_prog_cols, dis_prog_rows); // male, vl, cd4, cd4_duration, vl_duration, hiv, art
-const int cd4_durationInd = 3; // Column of dis_prog_mat that contains mean cd4_duration
-const int vl_durationInd = 4; // Column of dis_prog_mat that contains mean vl_duration
 
 void progressDisease() {
-
-    // Set up dis_prog arrays - ignore HIV and ART columns. Notice this reorders with respect to R output. This is breaking - indexing is wrong somewhere
-    double cd4_prog[nMale][nVl-1][nCD4-1] = {0};
-    // initialize outside!!!
-    for(int ii : maleBins) {
-    	for(int jj = 0; jj < nVl-1; jj++){ // note -1
-    		for(int kk = 0; kk < nCD4-1; kk++) { // note -1
-    			int rowInd;
-    			rowInd = ii * (nVl - 1)*(nCD4 - 1) + jj * (nCD4-1) + kk;
-    			cd4_prog[ii][jj][kk] = dis_prog_mat(rowInd, cd4_durationInd);
-    		}
-
-    	}
-    }
-
-    double vl_prog[nMale][nVl-1][nCD4-1] = {0};
-
-    for(int ii : maleBins) {
-    	for(int jj = 0; jj < nVl-1; jj++){ // note -1
-    		for(int kk = 0; kk < nCD4-1; kk++) { // note -1
-    			int rowInd;
-    			rowInd = ii * (nVl - 1)*(nCD4 - 1) + jj * (nCD4-1) + kk;
-    			vl_prog[ii][jj][kk] = dis_prog_mat(rowInd, vl_durationInd);
-    		}
-    	}
-    }
-
 
     double count;
     int hiv = 1;
