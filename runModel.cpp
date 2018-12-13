@@ -23,11 +23,11 @@ void riskAdjust();
 int main() {
 
 	initParams(); // evetually will load up all auxilary csvs
-	initPop("pop_0.out");
+	initPop("testData/pop_0.out");
 	int nSteps = 410;
 	char buffer[50];
 	int timeInd = 12;
-	bool printOutput = false;
+	bool printOutput = true;
 
 	// Parameters
     clock_t tStart;
