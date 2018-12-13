@@ -3,8 +3,6 @@ import itertools
 import glob
 import os
 
-
-nSteps = 410
 epsilon = 0.0000001
 
 fileBaseNames = [
