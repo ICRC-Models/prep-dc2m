@@ -22,9 +22,13 @@ void riskAdjust();
 
 int main(int argc, char** argv) {
 
+	int nSteps = static_cast <int> (std::floor(year_end - year_start + 1) / time_step); // Can this be moved into globals?
+	
 	initParams(); // evetually will load up all auxilary csvs
 	initPop("rout/pop_0.out");
-	int nSteps = 410;
+
+	std::cout << "nsteps: " << nSteps << std::endl;
+
 	char buffer[50];
 	int timeInd = 12;
 	bool printOutput = false;

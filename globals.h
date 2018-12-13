@@ -3,6 +3,9 @@
 #include <array>
 // #include <eigen3/Eigen/Dense>
 
+const int year_start = 1980;
+const int year_end = 2020;
+
 const double time_step = 0.1;
 // parameter that governs the extent to which differences in reported number
 // of sexual partners between males and females is male (1) or female (0) driven

@@ -167,6 +167,7 @@ void writeLambdaMat(int timeStep){
 }
 
 void initParams(){
+
     // broken out from addBirths
     // fert header: age,male,gamma,cd4,art
     int fert_cols = 5;
