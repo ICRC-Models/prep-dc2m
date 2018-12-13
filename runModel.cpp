@@ -27,7 +27,7 @@ int main() {
 	int nSteps = 410;
 	char buffer[50];
 	int timeInd = 12;
-	bool printOutput = true;
+	bool printOutput = false;
 
 	// Parameters
     clock_t tStart;
