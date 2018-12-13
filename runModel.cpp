@@ -121,6 +121,7 @@ int main() {
 
 	}
 
+
 	tEnd = clock();
 
 	std::cout << "Loop Finished." << std::endl;
