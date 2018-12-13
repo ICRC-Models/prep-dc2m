@@ -1,5 +1,8 @@
 import multiprocessing
 import itertools
+import glob
+import os
+
 
 nSteps = 410
 epsilon = 0.0000001
@@ -19,7 +22,25 @@ fileBaseNames = [
     "riskAdjust"
 ]
 
+
 def doSequence(fileBaseName):
+
+
+    fileList = glob.glob('./cout/*.cout')
+
+
+    if fileList:
+        used_numbers = []
+        for f in fileList:
+            try:
+                file_number = int(os.path.splitext(os.path.basename(f))[0].split('_')[-1])
+                used_numbers.append(file_number)
+            except ValueError:
+                pass
+        nSteps = max(used_numbers) + 1
+    else:
+        return "Failed: no files in ./cout found"
+
     for i in range(nSteps):
         baseWithInt = fileBaseName + "_%i" % i
         f1 = open("rout/" + baseWithInt + ".out")
@@ -39,7 +60,8 @@ def doSequence(fileBaseName):
 
 
 if __name__ == "__main__":
-    p = multiprocessing.Pool(12)
+    ncores = multiprocessing.cpu_count() - 1
+    p = multiprocessing.Pool(ncores)
     output = p.map(doSequence, fileBaseNames)
     for line in output:
         print line
