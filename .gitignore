@@ -4,5 +4,9 @@
 *.pdf
 *.RData
 *.o
+*.dSYM
+*.pyc
+*.DS_Store
 /bin
 /popTest
+/data
