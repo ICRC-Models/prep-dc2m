@@ -38,15 +38,15 @@ Eigen::MatrixXd epsilons = readCSV("epsilons_smoothed.csv", epsilons_cols, epsil
 
 
 // Totals - these are used by more than one function
-double total_partners_sex[nMale] = {0};
-double total_partners_sex_age[nAge][nMale] = {0};
-double total_partners_sex_age_risk[nAge][nMale][nRisk] = {0};
+double total_partners_sex[nMale];
+double total_partners_sex_age[nAge][nMale];
+double total_partners_sex_age_risk[nAge][nMale][nRisk];
 
 // Transmission risk parameters based on number of sex acts, male, and viral load/ART status of partner
-int betas_cols = 7;
-int betas_rows = 72;
-Eigen::MatrixXd betas_mat = readCSV("betas.csv", betas_cols, betas_rows);
-int transmissionRiskInd = 6; // Column of betas_mat containing transmission risk
+// int betas_cols = 7;
+// int betas_rows = 72;
+// Eigen::MatrixXd betas_mat = readCSV("betas.csv", betas_cols, betas_rows);
+// int transmissionRiskInd = 6; // Column of betas_mat containing transmission risk
 
 // Risk reduction for interventions - move  these out
 // int rr_cols = 2;
@@ -59,17 +59,16 @@ int transmissionRiskInd = 6; // Column of betas_mat containing transmission risk
 // double psiPrEP = 0.92;
 // double psiCondom = 0.78;
 
+// can these be moved outside?
+double assortMatAgeSex[nAge][nMale][nAge][nMale] = {0};
+// double assortMatRisk[nRisk][nRisk] = {0};
+
+// Mixing matrix for completely random mixing
+double randomMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
 
 void calcMixMat(int time_index) {
 
 	 // std::cout << "Inside calcMixMat...time_index: " << time_index << std::endl;
-
-	// can these be moved outside?
-	double assortMatAgeSex[nAge][nMale][nAge][nMale] = {0};
-	double assortMatRisk[nRisk][nRisk] = {0};
-
-	// Mixing matrix for completely random mixing
-	double randomMat[nAge][nMale][nRisk][nAge][nMale][nRisk] = {0};
 
 	// Define epsilons. If I want different epsilons for age and risk I'll need to change this (and think carefully about whether code is still correct)
 	double epsilon_age = epsilons(time_index, 0);
@@ -77,18 +76,18 @@ void calcMixMat(int time_index) {
 
 	// Define mixing matrices for completely assortative mixing
 
-	// Assortative mixing by risk - this is the identity matrix.
-	for(int ii = 0; ii < nRisk; ii++) {
-		for(int jj = 0; jj < nRisk; jj++) {
+	// // Assortative mixing by risk - this is the identity matrix.
+	// for(int ii = 0; ii < nRisk; ii++) {
+	// 	for(int jj = 0; jj < nRisk; jj++) {
 
-			if(ii == jj) {
-				assortMatRisk[ii][jj] = 1;
-			} else {
-				assortMatRisk[ii][jj] = 0;
-			}
+	// 		if(ii == jj) {
+	// 			assortMatRisk[ii][jj] = 1;
+	// 		} else {
+	// 			assortMatRisk[ii][jj] = 0;
+	// 		}
 
-		}
-	}
+	// 	}
+	// }
 
 	// Assortative mixing by age and sex. Only heterosexual partnerships allowed. Use deltas to define age-disparate distribution.
 	double delta_age = deltas(time_index, 0);
@@ -151,15 +150,16 @@ void calcMixMat(int time_index) {
 
 
 	// Reset the total partners arrays to zero - could think of a better way of doing this
-	for(int ii = 0; ii < nAge; ii++) {
-		for(int jj = 0; jj < nMale; jj++) {
-			for(int kk = 0; kk < nRisk; kk++) {
-				total_partners_sex[jj] = 0;
-				total_partners_sex_age[ii][jj] = 0;
-				total_partners_sex_age_risk[ii][jj][kk] = 0;
+	for (int male : maleBins){
+		for (int age : ageBins){
+			for (int risk : riskBins){
+				total_partners_sex[male] = 0;
+				total_partners_sex_age[age][male] = 0;
+				total_partners_sex_age_risk[age][male][risk] = 0;
 			}
 		}
 	}
+
 
 	double sum, count;
 
@@ -383,20 +383,20 @@ void calcLambda() {
 
 
 	// Populate transmission risk array by partnership - should be defined outside of the function
-	double betas[nMale][nRisk][nVl][nArt] = {0};
+	// double betas[nMale][nRisk][nVl][nArt] = {0};
 
-	int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart, ivl_p, iart_p; // For use inside the loop
-	for(int rowInd = 0; rowInd < betas_rows; rowInd++) {
+	// int ihiv, iage, imale, irisk, icd4, ivl, icirc, iprep, icondom, iart, ivl_p, iart_p; // For use inside the loop
+	// for(int rowInd = 0; rowInd < betas_rows; rowInd++) {
 
-		// Identify what the columns in betas_mat correspond to
-		imale = betas_mat(rowInd, 0);
-		irisk = betas_mat(rowInd, 1) - 1; // 1 indexed
-		ivl_p = betas_mat(rowInd, 2);
-		iart_p = betas_mat(rowInd, 3);
+	// 	// Identify what the columns in betas_mat correspond to
+	// 	imale = betas_mat(rowInd, 0);
+	// 	irisk = betas_mat(rowInd, 1) - 1; // 1 indexed
+	// 	ivl_p = betas_mat(rowInd, 2);
+	// 	iart_p = betas_mat(rowInd, 3);
 
-		betas[imale][irisk][ivl_p][iart_p] = betas_mat(rowInd, transmissionRiskInd);
+	// 	betas[imale][irisk][ivl_p][iart_p] = betas_mat(rowInd, transmissionRiskInd);
 
-	}
+	// }
 
 	// Calculate number of HIV+ people in each ART and viral load category by age, sex, and risk
 	double total_hivpos_age_sex_risk_vl_art[nAge][nMale][nRisk][nVl][nArt] = {0};

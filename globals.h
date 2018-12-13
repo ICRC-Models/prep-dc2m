@@ -92,6 +92,9 @@ extern double back_mort[nAge][nMale];
 extern double hiv_mort[nAge][nCD4][nArt];
 extern double cd4_prog[nMale][nVl-1][nCD4-1];
 extern double vl_prog[nMale][nVl-1][nCD4-1];
+extern double assortMatRisk[nRisk][nRisk];
+// extern double assortMatAgeSex[nAge][nMale][nAge][nMale];
+extern double betas[nMale][nRisk][nVl][nArt];
 
 void initParams();
 // write a pop iterator?, with fixable indices?

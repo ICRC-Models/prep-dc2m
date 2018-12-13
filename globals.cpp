@@ -15,6 +15,8 @@ double back_mort[nAge][nMale] = {0};
 double hiv_mort[nAge][nCD4][nArt] = {0};
 double cd4_prog[nMale][nVl-1][nCD4-1] = {0};
 double vl_prog[nMale][nVl-1][nCD4-1] = {0};
+double assortMatRisk[nRisk][nRisk] = {0};
+double betas[nMale][nRisk][nVl][nArt] = {0};
 
 
 Eigen::MatrixXd risk_props_mat = readCSV("risk_props.csv", risk_cols, risk_rows);
@@ -242,6 +244,37 @@ void initParams(){
                 vl_prog[ii][jj][kk] = dis_prog_mat(rowInd, vl_durationInd);
             }
         }
+    }
+
+    // transmit
+    // Assortative mixing by risk - this is the identity matrix.
+    for(int ii = 0; ii < nRisk; ii++) {
+        for(int jj = 0; jj < nRisk; jj++) {
+
+            if(ii == jj) {
+                assortMatRisk[ii][jj] = 1;
+            } else {
+                assortMatRisk[ii][jj] = 0;
+            }
+
+        }
+    }
+
+    int betas_cols = 7;
+    int betas_rows = 72;
+    Eigen::MatrixXd betas_mat = readCSV("betas.csv", betas_cols, betas_rows);
+    int transmissionRiskInd = 6; // Column of betas_mat containing transmission risk
+
+    for(int rowInd = 0; rowInd < betas_rows; rowInd++) {
+
+        // Identify what the columns in betas_mat correspond to
+        int imale = betas_mat(rowInd, 0);
+        int irisk = betas_mat(rowInd, 1) - 1; // 1 indexed
+        int ivl_p = betas_mat(rowInd, 2);
+        int iart_p = betas_mat(rowInd, 3);
+
+        betas[imale][irisk][ivl_p][iart_p] = betas_mat(rowInd, transmissionRiskInd);
+
     }
 
 }
