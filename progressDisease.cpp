@@ -5,6 +5,14 @@
 #include "csvUtil.h"
 #include "globals.h"
 
+inline
+double exp2(double x) {
+  x = 1.0 + x / 1024.0;
+  x *= x; x *= x; x *= x; x *= x;
+  x *= x; x *= x; x *= x; x *= x;
+  x *= x; x *= x;
+  return x;
+}
 
 void progressDisease() {
 
