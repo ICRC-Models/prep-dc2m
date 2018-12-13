@@ -88,6 +88,8 @@ void writeLambdaMat(int timeStep);
 
 // used in addBirths
 extern double fert[nAge][nCD4][nArt];
+extern double back_mort[nAge][nMale];
+extern double hiv_mort[nAge][nCD4][nArt];
 
 void initParams();
 // write a pop iterator?, with fixable indices?
