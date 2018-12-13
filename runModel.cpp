@@ -20,14 +20,18 @@ void riskAdjust();
 
 // clang++ -O3 -std=c++11 -g runModel.cpp distributeART.cpp distributeCondoms.cpp addBirths.cpp subtractDeaths.cpp agePop.cpp progressDisease.cpp riskAdjust.cpp transmit.cpp csvUtil.cpp globals.cpp
 
-int main() {
+int main(int argc, char** argv) {
 
 	initParams(); // evetually will load up all auxilary csvs
-	initPop("testData/pop_0.out");
+	initPop("rout/pop_0.out");
 	int nSteps = 410;
 	char buffer[50];
 	int timeInd = 12;
 	bool printOutput = false;
+	if (argc > 1){
+		std::cout << "printing diagnostic output...shit will be slow" << std::endl;
+		printOutput = true;
+	}
 
 	// Parameters
     clock_t tStart;
@@ -42,7 +46,8 @@ int main() {
 
 		distributeART(timeIndex);
 		if (printOutput){
-			filename << "distributeART_" << timeIndex << ".cout";
+			std::cout << "time step " << timeIndex << " of " << nSteps << std::endl;
+			filename << "cout/distributeART_" << timeIndex << ".cout";
 			writePop(filename.str(), timeIndex);
 			filename.str("");
 			filename.clear();
@@ -50,7 +55,7 @@ int main() {
 
 		distributeCondoms(timeIndex);
 		if (printOutput){
-			filename << "distributeCondoms_" << timeIndex << ".cout";
+			filename << "cout/distributeCondoms_" << timeIndex << ".cout";
 			writePop(filename.str(), timeIndex);
 			filename.str("");
 			filename.clear();
@@ -59,7 +64,7 @@ int main() {
 
 		addBirths(timeIndex);
 		if (printOutput){
-			filename << "addBirths_" << timeIndex << ".cout";
+			filename << "cout/addBirths_" << timeIndex << ".cout";
 			writePop(filename.str(), timeIndex);
 			filename.str("");
 			filename.clear();
@@ -67,7 +72,7 @@ int main() {
 
 		subtractDeaths(timeIndex);
 		if (printOutput){
-			filename << "subtractDeaths_" << timeIndex << ".cout";
+			filename << "cout/subtractDeaths_" << timeIndex << ".cout";
 			writePop(filename.str(), timeIndex);
 			filename.str("");
 			filename.clear();
@@ -75,7 +80,7 @@ int main() {
 
 		agePop();
 		if (printOutput){
-			filename << "agePop_" << timeIndex << ".cout";
+			filename << "cout/agePop_" << timeIndex << ".cout";
 			writePop(filename.str(), timeIndex);
 			filename.str("");
 			filename.clear();
@@ -83,7 +88,7 @@ int main() {
 
 		progressDisease();
 		if (printOutput){
-			filename << "progressDisease_" << timeIndex << ".cout";
+			filename << "cout/progressDisease_" << timeIndex << ".cout";
 			writePop(filename.str(), timeIndex);
 			filename.str("");
 			filename.clear();
@@ -97,7 +102,7 @@ int main() {
 			writeMixMat(timeIndex);
 			writeAdjustedPartnersMat(timeIndex);
 			writeLambdaMat(timeIndex);
-			filename << "transmit_" << timeIndex << ".cout";
+			filename << "cout/transmit_" << timeIndex << ".cout";
 			writePop(filename.str(), timeIndex);
 			filename.str("");
 			filename.clear();
@@ -105,7 +110,7 @@ int main() {
 
 		endPop();
 		if(printOutput){
-			filename << "endPop_" << timeIndex << ".cout";
+			filename << "cout/endPop_" << timeIndex << ".cout";
 			writePop(filename.str(), timeIndex);
 			filename.str("");
 			filename.clear();
@@ -113,7 +118,7 @@ int main() {
 
 		riskAdjust();
 		if (printOutput){
-			filename << "riskAdjust_" << timeIndex << ".cout";
+			filename << "cout/riskAdjust_" << timeIndex << ".cout";
 			writePop(filename.str(), timeIndex);
 			filename.str("");
 			filename.clear();

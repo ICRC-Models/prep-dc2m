@@ -96,7 +96,7 @@ void writePop(std::string filename, int timeStep = 0){
 
 void writeMixMat(int timeStep = 0){
     std::stringstream filename;
-    filename << "mixing_matrix_" << timeStep << ".cout";
+    filename << "cout/mixing_matrix_" << timeStep << ".cout";
     std::ofstream mixMatOut (filename.str());
     if(mixMatOut.is_open()){
         for(int ii = 0; ii < nAge; ii++) {
@@ -120,7 +120,7 @@ void writeMixMat(int timeStep = 0){
 
 void writeAdjustedPartnersMat(int timeStep){
     std::stringstream filename;
-    filename << "adjusted_partners_" << timeStep << ".cout";
+    filename << "cout/adjusted_partners_" << timeStep << ".cout";
     // Output array to match R format - maybe this can be moved into a separate function? Just for unit testing.
     std::ofstream adjustedPartnersMatOut (filename.str());
     if(adjustedPartnersMatOut.is_open()){
@@ -149,7 +149,7 @@ void writeAdjustedPartnersMat(int timeStep){
 
 void writeLambdaMat(int timeStep){
     std::stringstream filename;
-    filename << "lambda_mat_" << timeStep << ".cout";
+    filename << "cout/lambda_mat_" << timeStep << ".cout";
     // Save lambdaMat for comparison to R output
     std::ofstream lambdaMatOut (filename.str());
     if(lambdaMatOut.is_open()){

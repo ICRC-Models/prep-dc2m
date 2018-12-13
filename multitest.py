@@ -4,13 +4,6 @@ import itertools
 nSteps = 410
 epsilon = 0.0000001
 
-def loadCSVs(file1, file2):
-    with open(file1, "r") as f:
-        f1lines = f.readlines()
-    with open(file2, "r") as f:
-        f2lines = f.readlines()
-    return f1lines, f2lines
-
 fileBaseNames = [
     "distributeART",
     "distributeCondoms",
@@ -29,8 +22,8 @@ fileBaseNames = [
 def doSequence(fileBaseName):
     for i in range(nSteps):
         baseWithInt = fileBaseName + "_%i" % i
-        f1 = open("testData/" + baseWithInt + ".out")
-        f2 = open(baseWithInt + ".cout")
+        f1 = open("rout/" + baseWithInt + ".out")
+        f2 = open("cout/" + baseWithInt + ".cout")
         row = 0
         for line1, line2 in itertools.izip(f1, f2):
             row += 1
