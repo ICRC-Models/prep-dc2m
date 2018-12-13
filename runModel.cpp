@@ -27,22 +27,13 @@ int main() {
 	int nSteps = 410;
 	char buffer[50];
 	int timeInd = 12;
+	bool printOutput = false;
 
 	// Parameters
+    clock_t tStart;
+    clock_t tEnd;
 
-
-    // clock_t tStart;
-    // clock_t tEnd;
-
-
-    // std::cout << "Starting Loop..." << std::endl;
-
-
-
-	// Save final pop
-	// int nPopRows = pop.rows();
-
-	// tStart = clock();
+	tStart = clock();
 
 	// Loop over time steps
 	std::stringstream filename;
@@ -50,75 +41,90 @@ int main() {
 	for (int timeIndex = 0; timeIndex < nSteps; timeIndex++) {
 
 		distributeART(timeIndex);
-		filename << "distributeART_" << timeIndex << ".cout";
-		writePop(filename.str(), timeIndex);
-		filename.str("");
-		filename.clear();
+		if (printOutput){
+			filename << "distributeART_" << timeIndex << ".cout";
+			writePop(filename.str(), timeIndex);
+			filename.str("");
+			filename.clear();
+		}
 
 		distributeCondoms(timeIndex);
-		filename << "distributeCondoms_" << timeIndex << ".cout";
-		writePop(filename.str(), timeIndex);
-		filename.str("");
-		filename.clear();
+		if (printOutput){
+			filename << "distributeCondoms_" << timeIndex << ".cout";
+			writePop(filename.str(), timeIndex);
+			filename.str("");
+			filename.clear();
+		}
 
 
 		addBirths(timeIndex);
-		filename << "addBirths_" << timeIndex << ".cout";
-		writePop(filename.str(), timeIndex);
-		filename.str("");
-		filename.clear();
-
+		if (printOutput){
+			filename << "addBirths_" << timeIndex << ".cout";
+			writePop(filename.str(), timeIndex);
+			filename.str("");
+			filename.clear();
+		}
 
 		subtractDeaths(timeIndex);
-		filename << "subtractDeaths_" << timeIndex << ".cout";
-		writePop(filename.str(), timeIndex);
-		filename.str("");
-		filename.clear();
+		if (printOutput){
+			filename << "subtractDeaths_" << timeIndex << ".cout";
+			writePop(filename.str(), timeIndex);
+			filename.str("");
+			filename.clear();
+		}
 
 		agePop();
-		filename << "agePop_" << timeIndex << ".cout";
-		writePop(filename.str(), timeIndex);
-		filename.str("");
-		filename.clear();
+		if (printOutput){
+			filename << "agePop_" << timeIndex << ".cout";
+			writePop(filename.str(), timeIndex);
+			filename.str("");
+			filename.clear();
+		}
 
 		progressDisease();
-		filename << "progressDisease_" << timeIndex << ".cout";
-		writePop(filename.str(), timeIndex);
-		filename.str("");
-		filename.clear();
-
+		if (printOutput){
+			filename << "progressDisease_" << timeIndex << ".cout";
+			writePop(filename.str(), timeIndex);
+			filename.str("");
+			filename.clear();
+		}
 
 		calcMixMat(timeIndex);
 		adjustPartnerships();
 		calcLambda();
 		transmit();
-
-		writeMixMat(timeIndex);
-		writeAdjustedPartnersMat(timeIndex);
-		writeLambdaMat(timeIndex);
-		filename << "transmit_" << timeIndex << ".cout";
-		writePop(filename.str(), timeIndex);
-		filename.str("");
-		filename.clear();
+		if (printOutput){
+			writeMixMat(timeIndex);
+			writeAdjustedPartnersMat(timeIndex);
+			writeLambdaMat(timeIndex);
+			filename << "transmit_" << timeIndex << ".cout";
+			writePop(filename.str(), timeIndex);
+			filename.str("");
+			filename.clear();
+		}
 
 		endPop();
-		filename << "endPop_" << timeIndex << ".cout";
-		writePop(filename.str(), timeIndex);
-		filename.str("");
-		filename.clear();
+		if(printOutput){
+			filename << "endPop_" << timeIndex << ".cout";
+			writePop(filename.str(), timeIndex);
+			filename.str("");
+			filename.clear();
+		}
 
 		riskAdjust();
-		filename << "riskAdjust_" << timeIndex << ".cout";
-		writePop(filename.str(), timeIndex);
-		filename.str("");
-		filename.clear();
+		if (printOutput){
+			filename << "riskAdjust_" << timeIndex << ".cout";
+			writePop(filename.str(), timeIndex);
+			filename.str("");
+			filename.clear();
+		}
 
 	}
 
-	// tEnd = clock();
+	tEnd = clock();
 
-	// std::cout << "Loop Finished." << std::endl;
-	// std::cout << nSteps << " steps took " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
+	std::cout << "Loop Finished." << std::endl;
+	std::cout << nSteps << " steps took " << (double)(tEnd - tStart)/CLOCKS_PER_SEC << std::endl;
 
 
 	writePop("pop_final.cout", timeInd);

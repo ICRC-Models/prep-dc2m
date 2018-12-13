@@ -1,11 +1,17 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <eigen3/Eigen/Dense>
 #include "globals.h"
 #include "csvUtil.h"
 
 double popCount[nHIV][nAge][nMale][nRisk][nCD4][nVl][nCirc][nPrep][nCondom][nArt] = {0};
 double popDiff[nHIV][nAge][nMale][nRisk][nCD4][nVl][nCirc][nPrep][nCondom][nArt] = {0};
+
+// params to be populated
+// distributeART
+double fert[nAge][nCD4][nArt] = {0};
+
 
 Eigen::MatrixXd risk_props_mat = readCSV("risk_props.csv", risk_cols, risk_rows);
 
@@ -154,57 +160,23 @@ void writeLambdaMat(int timeStep){
     }
 }
 
-// void initParams(){
+void initParams(){
+    // broken out from addBirths
+    // fert header: age,male,gamma,cd4,art
+    int fert_cols = 5;
+    int fert_rows = 144;
+    Eigen::MatrixXd fert_mat = readCSV("fert.csv", fert_cols, fert_rows); // age, male, gamma, cd4, art
+    int gammaInd = 2; // Column of fert_mat that contains fertility coefficient (zero indexed)
+    int rowInd;
+    for (int ii : ageBins){
+        for(int jj : cd4Bins){
+            for(int kk : artBins){
+                rowInd = ii * (nCD4*nArt) + jj * nArt + kk;
+                // This line requires fert_mat to be ordered by age, cd4, and ART status.
+                fert[ii][jj][kk] = fert_mat(rowInd, gammaInd);
+            }
 
-//     /////////////// SUBTRACT DEATHS ////////////////////////
-//     // Set up back_mort array.
-//     // again move this guy outside!!!!!!!!
-//     // back_mort header: age,male, mu
-//     int back_mort_cols = 3;
-//     int back_mort_rows = 24;
-//     Eigen::MatrixXd back_mort_mat = readCSV("back_mort.csv", back_mort_cols, back_mort_rows);
-//     const int muInd = 2; // Column of back_mort_mat that contains background mortality coefficient (zero indexed)
+        }
+    }
 
-//     // hiv_mort header: age, cd4, alpha, art, hiv
-//     int hiv_mort_cols = 5;
-//     int hiv_mort_rows = 144;
-//     Eigen::MatrixXd hiv_mort_mat = readCSV("hiv_mort.csv", hiv_mort_cols, hiv_mort_rows);
-//     const int alphaInd = 2; // Column of hiv_mort_mat that contains HIV mortality coefficient (zero indexed)
-
-
-//     double back_mort[nAge][nMale] = {0};
-
-//     for(int ii : ageBins){
-//         for(int jj : maleBins){
-
-//             int rowInd;
-//             rowInd = ii * nMale + jj;
-//             // This line requires back_mort_mat to be ordered by age, cd4, and ART status.
-//             back_mort[ii][jj] = back_mort_mat(rowInd, muInd);
-
-//         }
-//     }
-
-//     // Set up hiv_mort array. Drop HIV column - this only applies to HIV+.
-//     // Note that this reorders with respect to R output.
-//     // move this guy outside!!!!!
-//     double hiv_mort[nAge][nCD4][nArt] = {0};
-
-//     for(int ii : ageBins){
-//         for(int jj : cd4Bins){
-//             for(int kk : artBins) {
-//                 int rowInd;
-//                 rowInd =  ii * nCD4 * nArt + jj * nArt + kk;
-//                 // This line requires hiv_mort_mat to be ordered by age, cd4, and ART status.
-//                 hiv_mort[ii][jj][kk] = hiv_mort_mat(rowInd, alphaInd);
-//             }
-//         }
-//     }
-
-
-//     /////////////// TRANSMIT ////////////////////////
-
-
-
-
-// }
+}

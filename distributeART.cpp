@@ -11,21 +11,19 @@ int art_cols = 5;
 int art_rows = 410;
 
 Eigen::MatrixXd art_cov = readCSV("art_cov.csv", art_cols, art_rows);
-
+double propART[nCD4][nArt];
 
 void distributeART(int time_index){
 
     Eigen::VectorXd art_cov_row = art_cov.row(time_index);
-
-    double prop[nCD4][nArt];
     for(int ii=0; ii<nCD4; ii++){
         if (ii==0){
-            prop[ii][0] = 1;
-            prop[ii][1] = 0;
+            propART[ii][0] = 1;
+            propART[ii][1] = 0;
         }
         else {
-            prop[ii][0] = 1 - art_cov_row(ii-1);
-            prop[ii][1] = art_cov_row(ii-1);
+            propART[ii][0] = 1 - art_cov_row(ii-1);
+            propART[ii][1] = art_cov_row(ii-1);
         }
     }
 
@@ -51,7 +49,7 @@ void distributeART(int time_index){
                                     }
                                     // now apply the sum
                                     for (int art : artBins){
-                                        popCount[hiv][age][male][risk][cd4][vl][circ][prep][condom][art] = artSum * prop[cd4][art];
+                                        popCount[hiv][age][male][risk][cd4][vl][circ][prep][condom][art] = artSum * propART[cd4][art];
                                     }
 
                                 }

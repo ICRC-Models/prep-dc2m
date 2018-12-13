@@ -10,7 +10,7 @@ int condom_rows = 410; // One row for each time step
 
 
 Eigen::MatrixXd condom_cov = readCSV("condom_cov.csv", condom_cols, condom_rows);
-
+double propCond[nAge][nCondom];
 
 void distributeCondoms(int time_index){
     // load parameters
@@ -19,10 +19,10 @@ void distributeCondoms(int time_index){
     // std::cout << "cov row " << condom_cov_row << std::endl;
     // std::cout << condom_cov_row << std::endl;
 
-    double prop[nAge][nCondom];
+
     for(int ii=0; ii<nAge; ii++){
-        prop[ii][0] = 1 - condom_cov_row(ii);
-        prop[ii][1] = condom_cov_row(ii);
+        propCond[ii][0] = 1 - condom_cov_row(ii);
+        propCond[ii][1] = condom_cov_row(ii);
     }
 
 
@@ -47,7 +47,7 @@ void distributeCondoms(int time_index){
                                         }
                                         // now apply the sum
                                         for (int condom : condomBins){
-                                            popCount[hiv][age][male][risk][cd4][vl][circ][prep][condom][art] = condomSum * prop[age][condom];
+                                            popCount[hiv][age][male][risk][cd4][vl][circ][prep][condom][art] = condomSum * propCond[age][condom];
                                         }
                                     }
                                 }

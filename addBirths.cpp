@@ -5,11 +5,6 @@
 #include "csvUtil.h"
 #include "globals.h"
 
-// fert header: age,male,gamma,cd4,art
-int fert_cols = 5;
-int fert_rows = 144;
-Eigen::MatrixXd fert_mat = readCSV("fert.csv", fert_cols, fert_rows); // age, male, gamma, cd4, art
-const int gammaInd = 2; // Column of fert_mat that contains fertility coefficient (zero indexed)
 
 // Vertical transmission parameters - these are time-varying
 int vert_cols = 1;
@@ -21,7 +16,6 @@ Eigen::MatrixXd vert_trans_mat = readCSV("vert_trans.csv", vert_cols, vert_rows)
 // Eigen::MatrixXd risk_props_mat = readCSV("risk_props.csv", risk_cols, risk_rows);
 const double risk_prop_ind = 0; // Column of risk_mat that contains risk proportions (zero indexed)
 
-
 void addBirths(int time_index){
 
     // Vertical transmission paramter
@@ -30,19 +24,7 @@ void addBirths(int time_index){
 
     // Set up fert array - ignore male column. Notice this reorders with respect to R output
     // move this guy out!
-    double fert[nAge][nCD4][nArt] = {0};
-    int rowInd;
 
-    for (int ii : ageBins){
-        for(int jj : cd4Bins){
-            for(int kk : artBins){
-                rowInd = ii * (nCD4*nArt) + jj * nArt + kk;
-                // This line requires fert_mat to be ordered by age, cd4, and ART status.
-                fert[ii][jj][kk] = fert_mat(rowInd, gammaInd);
-            }
-
-        }
-    }
 
 	// Calculate total birhts from HIV- and HIV+ mothers by multiplying gamma
     // in fert by count. Should only operate on women

@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <array>
-#include <eigen3/Eigen/Dense>
+// #include <eigen3/Eigen/Dense>
 
 const double time_step = 0.1;
 // parameter that governs the extent to which differences in reported number
@@ -86,7 +86,10 @@ void writeLambdaMat(int timeStep);
 // extern double back_mort[nAge][nMale]; // subtract deaths
 // extern double hiv_mort[nAge][nCD4][nArt]; // subtract deaths
 
-// void initParams();
+// used in addBirths
+extern double fert[nAge][nCD4][nArt];
+
+void initParams();
 // write a pop iterator?, with fixable indices?
 
 
