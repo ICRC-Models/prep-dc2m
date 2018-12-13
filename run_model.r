@@ -13,6 +13,10 @@ date <- Sys.Date()
 name <- "low_fertility_moultrie_1990_back_mort_reduction"
 dir.create(paste0("output/", date), recursive = TRUE)
 
+## Output folders
+dir.create("rout")
+dir.create("cout")
+
 ## Global variables
 year_start <- 1980
 year_end <- 2020
@@ -100,11 +104,8 @@ pop[risk_props, count := count * prop]
 ## Seed infections - this is currently adding 0.1% of total population to infected groups, but not subtracting them from the susceptible pool.  Need to confirm with Roger
 seedInfections(pop, 0.001)
 
-nsteps = 410
-
 setorder(pop, hiv, age, male, risk, cd4, vl, circ, prep, condom, art)
 print("Before the loop")
-print(pop[41569, ])
 
 ## Run model
 for(tt in 1:nsteps) {
